@@ -1,0 +1,7 @@
+{
+  "name": "smartestApps",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
