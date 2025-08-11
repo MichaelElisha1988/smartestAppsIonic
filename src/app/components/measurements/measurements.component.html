@@ -1,0 +1,51 @@
+@if(dataStore.measureStatus().status != 0) {
+@if(dataStore.measureStatus().status == 1) {
+<app-measure-option></app-measure-option>
+} @if(dataStore.measureStatus().status == 2) {
+<app-measure-option></app-measure-option>
+} @if(dataStore.measureStatus().status == 3) {
+<app-measure-option></app-measure-option>
+} } @else {
+<div class="measure" @fade>
+  <figure class="explaination alert">
+    <p>Once you've taken your last measurement, voila!</p>
+    <p>
+      A window magically appears with your latest measurement like a digital
+      crystal ball.
+    </p>
+    <p>
+      It's like having your very own measuring genie granting your accuracy
+      wishes!
+    </p>
+    <p>Need more guidance or just want to chat?</p>
+    <p>
+      Don't hesitate to reach out—we're here to make your measuring experience
+      as enchanting as possible!
+    </p>
+  </figure>
+
+  <figure class="explaination chill">
+    <p>
+      Welcome to the ultimate measurements app that's as essential as your
+      morning coffee!
+    </p>
+    <p>
+      Our app transforms tricky conversions like liters to grams with the grace
+      of a math wizard using nifty density tricks.
+    </p>
+    <p>
+      But wait, there's more! Stay on top of your day with our one-of-a-kind
+      to-do list feature that keeps chaos at bay.
+    </p>
+    <p>
+      And when hunger strikes or creativity beckons, dive into our recipe book
+      bursting with culinary delights and DIY inspirations.
+    </p>
+    <p>
+      Whether you're a kitchen superhero or a lab coat aficionado, our app is
+      your trusty sidekick for nailing measurements and staying organized with a
+      sprinkle of fun!
+    </p>
+  </figure>
+</div>
+}

@@ -1,0 +1,76 @@
+<div class="titleAction" @fade>
+  {{ storeSrv.measureStatus().action!.title }}
+</div>
+<form class="measureInput" [formGroup]="storeSrv.measureForm()" @fade>
+  <div class="amount">
+    <div class="input-wrapper">
+      <input
+        class="i-number"
+        id="measureNum"
+        formControlName="measureNum"
+        placeholder=""
+        autocomplete="off"
+      />
+      <label class="l-number" for="measureNum">Amount:</label>
+      <select
+        class="s-measur"
+        id="measurment"
+        type="select"
+        formControlName="measurment"
+        placeholder=" "
+      >
+        @for (info of storeSrv.measureStatus().action!.measurements; track
+        $index) {
+        <option value="{{ info }}">
+          {{ info }}
+        </option>
+        }
+      </select>
+    </div>
+  </div>
+  @if(storeSrv.measureStatus().action?.desity) {
+  <div class="density">
+    <select
+      class="s-density"
+      id="density"
+      type="select"
+      formControlName="density"
+      placeholder=" "
+    >
+      @for (desityItem of storeSrv.measureStatus().action!.desity | keyvalue;
+      track $index) {
+      <option [value]="desityItem.value">
+        {{ desityItem.key }}
+      </option>
+      }
+    </select>
+  </div>
+  }
+</form>
+@if(storeSrv.measureForm().controls.density.value){
+<div class="textDensity">
+  density of this matarial is:
+  {{ storeSrv.measureForm().controls.density.value }}, please notice that there
+  can be differences beetween calculators you use.
+</div>
+}
+<div class="listAction">
+  <ul class="infoList">
+    @for (measurement of storeSrv.measureStatus().action!.measurements; track
+    $index) {
+    <li class="infoItem">
+      {{ measurement | uppercase }}:
+      <div>
+        {{
+          storeSrv.measureForm().controls.measureNum.value!
+            | measurements
+              : storeSrv.measureStatus().action!.title
+              : storeSrv.measureForm().controls.measurment.value!
+              : measurement
+              : storeSrv.measureForm().controls.density.value!
+        }}
+      </div>
+    </li>
+    }
+  </ul>
+</div>

@@ -1,0 +1,94 @@
+<ion-content [fullscreen]="true">
+  <section class="recepies">
+    @if(selectedMeal()){
+    <div class="recipie-item-big">
+      <div
+        class="tofavorite"
+        (click)="
+            notFav
+              ? addTofavorite(selectedMeal()!.strMeal)
+              : deleteFromFavorite(selectedMeal)
+          "
+      >
+        <img
+          src="{{ notFav ? 'assets/favorite.png' : 'assets/delete.png' }}"
+          alt=""
+        />
+      </div>
+      <img
+        class="back-img"
+        src="{{ selectedMeal()!.strMealThumb }}"
+        alt="steak"
+      />
+      <div class="blur-back-img"></div>
+      <div class="recipie-info">
+        <div class="recipie-category">{{ selectedMeal()!.strCategory }}</div>
+        <div class="recipie-title">
+          {{ selectedMeal()!.strMeal }} - {{ selectedMeal()!.strArea }}<span
+            *ngIf="selectedMeal()!.strTags"
+            >, {{ selectedMeal()!.strTags.split(",")[0] }}</span
+          >
+        </div>
+
+        <div class="read-more" (click)="ViewuserDetail(selectedMeal()!.idMeal)">
+          Lets's cook it...
+        </div>
+      </div>
+      <!-- <div class="lier-one"></div>
+        <div class="lier-two"></div> -->
+    </div>
+    }
+
+    <form class="recepies-search" [formGroup]="searchForm">
+      <input
+        type="text"
+        formControlName="search"
+        placeholder="What we cook today..."
+      />
+      @if(searchMealsInStok()){
+      <select
+        name="searchMeals"
+        id="searchMeals"
+        class="searchMeals"
+        formControlName="searchMeal"
+      >
+        @for (meal of searchMealsInStok(); track $index) {
+        <option [value]="meal.idMeal">{{ meal.strMeal }}</option>
+        }
+      </select>
+      }
+    </form>
+
+    <div class="favorite-list-wrapper">
+      <h2 class="favorite">Favorite :</h2>
+      <div class="favorite-list">
+        @for (meal of favoriteMealList; track $index) {
+        <div class="recipie-item-small">
+          <img
+            class="back-img"
+            (click)="selectMeal(meal)"
+            src="{{ meal.strMealThumb }}"
+            alt="steak"
+          />
+        </div>
+        }
+      </div>
+    </div>
+    @if(tenMealsInStok){ }
+    <div class="random-list-wrapper">
+      <h2 class="random">Random Recipies :</h2>
+      <div class="random-list">
+        @for(meal of tenMealsInStok; track $index){
+        <div class="recipie-item-small">
+          <img
+            class="back-img"
+            (click)="selectMeal(meal)"
+            src="{{ meal.strMealThumb }}"
+            alt="steak"
+          />
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+</ion-content>

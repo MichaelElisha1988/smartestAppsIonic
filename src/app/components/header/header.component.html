@@ -1,0 +1,58 @@
+<section class="header">
+  <div class="right">
+    <!-- <img
+      src="{{ innerHeaderData?.gtransIcon }}"
+      class="translate"
+      (click)="openTrans()"
+      [ngClass]="isOpenTrans ? 'open' : ''"
+    /> -->
+    <!-- <img
+      src="{{ innerHeaderData?.accIcon }}"
+      class="acc"
+      [ngClass]="isOpenAcc ? 'open' : ''"
+      (click)="openAcc()"
+    /> -->
+    <div class="logo">
+      <!-- <img src="{{ innerHeaderData?.logoIcon }}" alt="" /> -->
+      <div class="title" [class.glow]="isOpenBurger">smartestApps</div>
+    </div>
+  </div>
+  <div class="left">
+    <div
+      class="burger"
+      [class.open]="isOpenBurger"
+      (click)="isOpenBurger = !isOpenBurger"
+    >
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+  </div>
+</section>
+@if (isOpenBurger) {
+<div class="menu-container" @openClose>
+  <div class="options-list">
+    <ul class="list">
+      <h2 class="list-title">Applications</h2>
+      @if(!router.url.includes('home')) {
+      <li class="list-item" (click)="relocate('home')">Measurements</li>
+      } @if(!router.url.includes('recepies-book')) {
+      <li class="list-item" (click)="relocate('recepies-book')">
+        My Recipies Book
+      </li>
+      } @if(!router.url.includes('todo-list')) {
+      <li class="list-item" (click)="relocate('todo-list')">Todo List</li>
+      }
+      <h2 class="list-title">General</h2>
+      <li class="list-item">Add/Remove Measurements</li>
+      @if(!router.url.includes('policy')) {
+      <h2 class="list-title">Policies</h2>
+      <li class="list-item" (click)="relocate('policy')">Privacy Policy</li>
+      } @if(appDataStore.afterlogin$()) {
+      <h2 class="list-title">User</h2>
+      <li class="list-item">Log-Out</li>
+      }
+    </ul>
+  </div>
+</div>
+}

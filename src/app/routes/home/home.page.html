@@ -1,0 +1,26 @@
+<ion-content [fullscreen]="true">
+  <div id="container">
+    @switch (dataStore.menuStatus()) { @case (0) {
+    <app-measurements></app-measurements>
+    } }
+  </div>
+
+  <div class="main-menu">
+    <div class="wrap-list">
+      <ul class="list">
+        @for (item of generalData().actions; track $index) { @if($index+1 !=
+        dataStore.measureStatus().status) {
+        <li (click)="onMeasureStatus($index+1)" class="action">
+          <span>{{ item.title }}</span>
+        </li>
+        } }
+      </ul>
+    </div>
+    @if(dataStore.measureStatus().status != 0){
+    <div class="options">
+      <div class="back" (click)="onMeasureStatus(0)" @openClose>< HOME</div>
+      <div class="back" (click)="clearInsert()" @openClose>CLEAR</div>
+    </div>
+    }
+  </div>
+</ion-content>

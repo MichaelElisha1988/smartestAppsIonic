@@ -1,0 +1,71 @@
+<ion-content [fullscreen]="true">
+  <div id="container">
+    <section class="home">
+      <div class="wrap">
+        <div class="title">
+          <h1>{{ isRegister ? "Register" : "Login" }}</h1>
+        </div>
+        <form
+          class="login"
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit(isRegister)"
+        >
+          <div class="input-wrapper">
+            <input
+              class="i"
+              id="usenName"
+              type="email"
+              formControlName="usenName"
+              placeholder=" "
+              autocomplete="current-password"
+            />
+            <label class="l" for="usenName">Email :</label>
+          </div>
+
+          <div class="input-wrapper">
+            <input
+              class="i"
+              id="password"
+              type="password"
+              formControlName="password"
+              [ngClass]="isRegister ? 'seeThePass' : ''"
+              placeholder=" "
+              autocomplete="current-password"
+            />
+            <label class="l" for="password">Password: </label>
+          </div>
+          <div class="input-wrapper">
+            @if(isRegister){
+            <input
+              class="i"
+              [ngClass]="isRegister ? 'seeThePass' : ''"
+              id="password"
+              type="password"
+              formControlName="passwordConfirm"
+              placeholder=" "
+              autocomplete="current-password"
+            />
+            }
+            <label class="l" *ngIf="isRegister" for="password"
+              >Confirm Password:
+            </label>
+          </div>
+          <button type="submit" [disabled]="loginForm.status == 'INVALID'">
+            {{ isRegister ? "Register" : "Login" }}
+          </button>
+        </form>
+
+        <div class="coming-soon">
+          <span>{{ errorMsg }}</span>
+          <button (click)="register()">
+            {{ isRegister ? "Click here to Log-in" : "Click here to Register" }}
+          </button>
+        </div>
+      </div>
+      <div class="footer">
+        <span>© 2023 smartestApps</span>
+        <span>All rights reserved</span>
+      </div>
+    </section>
+  </div>
+</ion-content>

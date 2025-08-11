@@ -1,0 +1,10 @@
+{
+  "gtransIcon": "assets/g_translate.svg",
+  "accIcon": "assets/accessible.svg",
+  "logoIcon": "assets/logo.svg",
+  "setting": {
+    "settings": {},
+    "userName": "anonymous Ape",
+    "profileIcon": "url('../../../assets/account.svg')"
+  }
+}
