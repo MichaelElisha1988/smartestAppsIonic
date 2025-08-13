@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HomeData } from '../models/homeData.model';
 import { Header } from '../models/headerData.model';
 import { smartestAppsStore } from './data-store.service';
+import { DataService } from './data.service';
 
 @Injectable({
   providedIn: 'root',

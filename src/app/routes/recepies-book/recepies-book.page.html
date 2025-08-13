@@ -6,7 +6,7 @@
         class="tofavorite"
         (click)="
             notFav
-              ? addTofavorite(selectedMeal()!.strMeal)
+              ? addTofavorite()
               : deleteFromFavorite(selectedMeal)
           "
       >
@@ -24,10 +24,12 @@
       <div class="recipie-info">
         <div class="recipie-category">{{ selectedMeal()!.strCategory }}</div>
         <div class="recipie-title">
-          {{ selectedMeal()!.strMeal }} - {{ selectedMeal()!.strArea }}<span
-            *ngIf="selectedMeal()!.strTags"
+          {{ selectedMeal()!.strMeal }} - {{ selectedMeal()!.strArea }}
+          @if(selectedMeal()!.strTags) {
+          <span class="tags"
             >, {{ selectedMeal()!.strTags.split(",")[0] }}</span
           >
+          }
         </div>
 
         <div class="read-more" (click)="ViewuserDetail(selectedMeal()!.idMeal)">
@@ -45,7 +47,7 @@
         formControlName="search"
         placeholder="What we cook today..."
       />
-      @if(searchMealsInStok()){
+      @if(searchMealsInStok() && searchMealsInStok().length > 0) {
       <select
         name="searchMeals"
         id="searchMeals"
@@ -53,7 +55,7 @@
         formControlName="searchMeal"
       >
         @for (meal of searchMealsInStok(); track $index) {
-        <option [value]="meal.idMeal">{{ meal.strMeal }}</option>
+        <option [value]="$index">{{ meal.strMeal }}</option>
         }
       </select>
       }
@@ -62,7 +64,7 @@
     <div class="favorite-list-wrapper">
       <h2 class="favorite">Favorite :</h2>
       <div class="favorite-list">
-        @for (meal of favoriteMealList; track $index) {
+        @for (meal of favoriteMealList(); track $index) {
         <div class="recipie-item-small">
           <img
             class="back-img"
@@ -71,20 +73,25 @@
             alt="steak"
           />
         </div>
+        }@empty {
+        <div class="empty-favorite">
+          <p>No favorite meals yet.</p>
+        </div>
         }
       </div>
     </div>
-    @if(tenMealsInStok){ }
+
+    @if(tenMealsInStok()){ }
     <div class="random-list-wrapper">
       <h2 class="random">Random Recipies :</h2>
       <div class="random-list">
-        @for(meal of tenMealsInStok; track $index){
+        @for(meal of tenMealsInStok(); track $index){
         <div class="recipie-item-small">
           <img
             class="back-img"
             (click)="selectMeal(meal)"
             src="{{ meal.strMealThumb }}"
-            alt="steak"
+            [alt]="meal.strMeal"
           />
         </div>
         }

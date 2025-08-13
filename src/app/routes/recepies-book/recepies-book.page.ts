@@ -10,7 +10,8 @@ import { IonContent } from '@ionic/angular/standalone';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs';
 import { RecipiesDataService } from './recipies-data.service';
-import { Meal, MealModel } from 'src/app/models/meal.model';
+import { Meal } from 'src/app/models/meal.model';
+import { smartestAppsStore } from 'src/app/services/data-store.service';
 
 @Component({
   selector: 'app-recepies-book',
@@ -21,22 +22,25 @@ import { Meal, MealModel } from 'src/app/models/meal.model';
 })
 export class RecepiesBookPage implements OnInit {
   searchForm = new FormGroup({
-    search: new FormControl('', { updateOn: 'change' }),
-    searchMeal: new FormControl(null, { updateOn: 'change' }),
+    search: new FormControl<string>('', { updateOn: 'change' }),
+    searchMeal: new FormControl<number | null>(null, { updateOn: 'change' }),
   });
 
   recipiesSrv = inject(RecipiesDataService);
-  notFav: boolean = false;
+  dataStore = inject(smartestAppsStore);
+  notFav: boolean = true;
   searchFormStatusEffect = toSignal(this.searchForm.statusChanges);
+  searchMealValueEffect = toSignal(
+    this.searchForm.controls.searchMeal.valueChanges
+  );
   searchFormValueEffect = toSignal(this.searchForm.valueChanges);
 
   selectedMeal = signal<Meal | null>(null);
-  addTofavorite: any;
   deleteFromFavorite: any;
   ViewuserDetail: any;
   searchMealsInStok = signal<Meal[]>([]);
-  favoriteMealList: any;
-  tenMealsInStok: any;
+  favoriteMealList = signal<Meal[]>([]);
+  tenMealsInStok = signal<Meal[]>([]);
 
   constructor() {
     effect(() => {
@@ -45,12 +49,10 @@ export class RecepiesBookPage implements OnInit {
         this.searchFormValueEffect()!.search &&
         this.searchFormValueEffect()!.search!.length >= 2
       ) {
-        console.log('Search Form Value:', this.searchFormValueEffect()?.search);
         this.recipiesSrv
           .getMealByName(this.searchFormValueEffect()!.search!)
           .pipe(take(2))
           .subscribe((data) => {
-            console.log('Search Results:', data.meals);
             this.searchMealsInStok.set(data.meals);
           });
       } else {
@@ -58,13 +60,56 @@ export class RecepiesBookPage implements OnInit {
       }
     });
     effect(() => {
-      this.searchFormStatusEffect();
+      if (this.searchMealValueEffect()) {
+        this.selectedMeal.set(
+          this.searchMealsInStok()[this.searchMealValueEffect()!]
+        );
+      }
+    });
+    effect(() => {
+      console.log('favoriteMealList effect triggered');
+      this.favoriteMealList.set([]);
+      for (let i = 0; i < this.dataStore.favoriteMealList().length; i++) {
+        this.recipiesSrv
+          .getMealByName(this.dataStore.favoriteMealList()[i].name)
+          .pipe(take(1))
+          .subscribe((data) => {
+            this.favoriteMealList().push(data.meals[0]);
+          });
+      }
     });
   }
 
-  ngOnInit() {}
+  addTofavorite() {
+    if (this.selectedMeal()) {
+      this.favoriteMealList.update((list) => [
+        ...list,
+        this.selectedMeal() as Meal,
+      ]);
+      this.notFav = false;
+    }
+  }
 
-  selectMeal(meal: MealModel) {
-    console.log(meal);
+  ngOnInit() {
+    this.dataStore.showLoader(true);
+    for (let i = 0; i < 10; i++) {
+      this.recipiesSrv
+        .getRandomMeal()
+        .pipe(take(1))
+        .subscribe((data) => {
+          this.tenMealsInStok().push(data.meals[0]);
+          i === 0 ? this.selectedMeal.set(data.meals[0]) : null;
+          if (this.tenMealsInStok().length === 10) {
+            this.dataStore.showLoader(false);
+          }
+        });
+    }
+  }
+
+  selectMeal(meal: Meal) {
+    this.favoriteMealList().filter((m) => m.idMeal === meal.idMeal).length > 0
+      ? (this.notFav = false)
+      : (this.notFav = true);
+    this.selectedMeal.set(meal);
   }
 }

@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { IonContent } from '@ionic/angular/standalone';
-import { HeaderComponent } from '../../components/header/header.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 import {
   FormGroup,
@@ -16,7 +15,7 @@ import { LoginService } from '../../services/login.service';
   selector: 'app-login',
   templateUrl: 'login.page.html',
   styleUrls: ['login.page.scss'],
-  imports: [CommonModule, IonContent, HeaderComponent, ReactiveFormsModule],
+  imports: [CommonModule, IonContent, ReactiveFormsModule],
   animations: [
     trigger('openClose', [
       transition(':enter', [

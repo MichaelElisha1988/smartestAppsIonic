@@ -9,7 +9,7 @@ import {
 import { FormGroup, FormControl } from '@angular/forms';
 
 export interface smartestAppsState {
-  count: number;
+  loader: boolean;
   measureStatus: { action: ActionItem | null; status: MeasureStatus };
   menuStatus: menuStatus;
   measureForm: FormGroup<{
@@ -20,10 +20,11 @@ export interface smartestAppsState {
   login$: any; // Placeholder for login observable
   loginError$: any; // Placeholder for login error observable
   afterlogin$: any; // Placeholder for after login subject
+  favoriteMealList: { dbId?: string; id: number; name: string }[];
 }
 
 const initialState: smartestAppsState = {
-  count: 0,
+  loader: false,
   measureStatus: { action: null, status: MeasureStatus.HOME },
   menuStatus: menuStatus.MEASURE,
   measureForm: new FormGroup({
@@ -31,9 +32,12 @@ const initialState: smartestAppsState = {
     measurment: new FormControl('', { nonNullable: true }),
     density: new FormControl('', { nonNullable: true }),
   }),
-  login$: null,
+  login$: localStorage.getItem('login')
+    ? JSON.parse(localStorage.getItem('login')!)
+    : null,
   loginError$: null,
-  afterlogin$: null,
+  afterlogin$: localStorage.getItem('login') ? true : false,
+  favoriteMealList: [], // Initialize with an empty array
 };
 
 export const smartestAppsStore = signalStore(
@@ -68,8 +72,15 @@ export const smartestAppsStore = signalStore(
         tap((errorMsg) => patchState(store, { loginError$: errorMsg }))
       )
     ),
-    reset: rxMethod<void>((_) =>
-      _.pipe(tap(() => patchState(store, { count: 0 })))
+    setFavoriteMealList: rxMethod<
+      { dbId?: string; id: number; name: string }[]
+    >((MealList) =>
+      MealList.pipe(
+        tap((MealList) => patchState(store, { favoriteMealList: MealList }))
+      )
+    ),
+    showLoader: rxMethod<boolean>((show) =>
+      show.pipe(tap((show) => patchState(store, { loader: show })))
     ),
   }))
 );

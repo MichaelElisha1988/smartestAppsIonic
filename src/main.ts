@@ -17,10 +17,15 @@ import { GeneralDataService } from './app/services/general-data.service';
 
 import { inject, provideAppInitializer } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import { DataService } from './app/services/data.service';
 
-export function initializeData(generalDataSrv: GeneralDataService): void {
+export function initializeData(
+  generalDataSrv: GeneralDataService,
+  dataService: DataService
+): void {
   console.log('Initializing data from JSON');
   generalDataSrv.getDataFromJson();
+  dataService.getFavoriteMealList();
 }
 
 bootstrapApplication(AppComponent, {
@@ -30,6 +35,8 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideAnimations(),
     provideHttpClient(),
-    provideAppInitializer(() => initializeData(inject(GeneralDataService))),
+    provideAppInitializer(() =>
+      initializeData(inject(GeneralDataService), inject(DataService))
+    ),
   ],
 });

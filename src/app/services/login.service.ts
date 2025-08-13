@@ -69,6 +69,7 @@ export class LoginService {
         // Signed up
         const user = userCredential?.user;
         this.dataStore.setLogin(user);
+        localStorage.setItem('login', JSON.stringify(user));
         this.setAfterLogin();
 
         // ...
