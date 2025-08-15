@@ -16,16 +16,12 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { GeneralDataService } from './app/services/general-data.service';
 
 import { inject, provideAppInitializer } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
-import { DataService } from './app/services/data.service';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { LoaderInterceptor } from './app/services/loader.intercepter';
 
-export function initializeData(
-  generalDataSrv: GeneralDataService,
-  dataService: DataService
-): void {
+export function initializeData(generalDataSrv: GeneralDataService): void {
   console.log('Initializing data from JSON');
   generalDataSrv.getDataFromJson();
-  dataService.getFavoriteMealList();
 }
 
 bootstrapApplication(AppComponent, {
@@ -35,8 +31,11 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideAnimations(),
     provideHttpClient(),
-    provideAppInitializer(() =>
-      initializeData(inject(GeneralDataService), inject(DataService))
-    ),
+    provideAppInitializer(() => initializeData(inject(GeneralDataService))),
+    {
+      provide: 'HTTP_INTERCEPTORS',
+      useClass: LoaderInterceptor,
+      multi: true,
+    },
   ],
 });

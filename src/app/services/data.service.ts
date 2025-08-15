@@ -91,6 +91,7 @@ export class DataService {
     this.getSharedEmails();
     this.getListId();
     this.getTaskList();
+    this.getFavoriteMealList();
   }
 
   getLoginName(): string {
