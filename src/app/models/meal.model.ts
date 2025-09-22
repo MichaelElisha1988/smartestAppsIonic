@@ -55,4 +55,6 @@ export interface Meal {
   strImageSource: string;
   strCreativeCommonsConfirmed: any;
   dateModified: any;
+
+  [key: string]: any;
 }

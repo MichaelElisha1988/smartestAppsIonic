@@ -1,0 +1,64 @@
+.header-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--offgreen);
+  border-bottom: 2px solid var(--green);
+  box-shadow: 1px 1px 3px var(--dark);
+  padding: 0 20px;
+  width: -webkit-fill-available;
+  position: sticky;
+  top: 15px;
+  z-index: 99;
+  margin-top: 35px;
+  margin-bottom: 15px;
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 60px;
+    // .user-pic {
+    //   height: 50%;
+    //   img {
+    //     height: -webkit-fill-available;
+    //     border-radius: 50%;
+    //   }
+    // }
+    .user-name {
+      font-size: 3svw;
+      font-weight: 600;
+      color: var(--dark);
+      text-shadow: 1px 1px 2px var(--dark);
+    }
+  }
+  .app-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 16px;
+    text-shadow: 1px 1px 25px var(--dark);
+    .app-logo {
+      font-weight: 600;
+      color: var(--green);
+      text-shadow: 1px 1px 2px var(--dark);
+    }
+    .app-name {
+      font-weight: 600;
+      color: var(--yellow);
+      text-shadow: 1px 1px 2px var(--dark);
+    }
+  }
+  .date-info {
+    font-size: 3svw;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    .day {
+      font-weight: 600;
+      color: var(--green);
+      text-shadow: 1px 1px 2px var(--dark);
+    }
+    .date {
+    }
+  }
+}

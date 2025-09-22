@@ -1,0 +1,11 @@
+<div class="footer-container">
+  <section class="copy-right">© Year 2024</section>
+  <button
+    class="fast-add-list"
+    (click)="openAddTask()"
+    [disabled]="!listIdIsEmpty"
+  >
+    <div class="line"></div>
+    <div class="line rotate"></div>
+  </button>
+</div>

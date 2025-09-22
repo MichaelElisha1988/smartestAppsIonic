@@ -52,7 +52,7 @@
       <li class="list-item" (click)="relocate('policy')">Privacy Policy</li>
       } @if(appDataStore.afterlogin$()) {
       <h2 class="list-title">User</h2>
-      <li class="list-item">Log-Out</li>
+      <li class="list-item" (click)="logOut()">Log-Out</li>
       }
     </ul>
   </div>

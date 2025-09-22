@@ -1,0 +1,69 @@
+<div class="scroll-bar">
+  <!-- <div class="scroll-arrows left">
+    <button class="btn-scroll back" (click)="moveAround(50)">
+      {{ "←" }}
+    </button>
+  </div> -->
+  <section class="list-menu" #ListId>
+    @for(list of listId(); track $index){
+    <div
+      class="list"
+      [class.selected]="$index === selectedListId()"
+      (click)="selectListId($event, list, $index)"
+      [attr.listId]="list.id"
+    >
+      @if(!list.editMode){
+      <span class="list-name">{{ list.name }}</span>
+      }@else{
+      <ng-template>
+        <input
+          type="text"
+          (blur)="updateListName($event, list)"
+          [value]="list.name"
+          class="edit-list-name"
+        />
+      </ng-template>
+      }
+    </div>
+    }
+  </section>
+  <div class="add-section" [class.new-add]="addActive()">
+    <input
+      type="text"
+      class="add-list-input"
+      [class.new-add]="addActive()"
+      #addInput
+    />
+    <div (click)="addListId($event)" class="add-list">
+      {{ addActive() ? "Ok" : "Add List" }}
+    </div>
+    <div (click)="deleteList()" class="add-list">
+      {{ "Remove List" }}
+    </div>
+  </div>
+
+  <!-- <div class="scroll-arrows right">
+    <button class="btn-scroll forward" (click)="moveAround(-50)">
+      {{ "→" }}
+    </button>
+  </div> -->
+  @if(!showSharedList()){
+
+  <div class="share-list box">
+    <input
+      [formControl]="shareWithEmail"
+      type="email"
+      placeholder="To share with in Email"
+    />
+    <button
+      _ngcontent-xpv-c28=""
+      class="share-list"
+      [disabled]="!shareWithEmail.valid"
+      (click)="shareList()"
+    >
+      Share Selected Task List
+    </button>
+  </div>
+  }
+</div>
+<task class="tasks"></task>

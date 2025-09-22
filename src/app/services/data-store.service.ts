@@ -7,6 +7,7 @@ import {
   menuStatus,
 } from '../models/homeData.model';
 import { FormGroup, FormControl } from '@angular/forms';
+import { Meal } from '../models/meal.model';
 
 export interface smartestAppsState {
   loader: boolean;
@@ -21,6 +22,7 @@ export interface smartestAppsState {
   loginError$: any; // Placeholder for login error observable
   afterlogin$: any; // Placeholder for after login subject
   favoriteMealList: { dbId?: string; id: number; name: string }[];
+  selectedMeal: Meal | null;
 }
 
 const initialState: smartestAppsState = {
@@ -38,6 +40,7 @@ const initialState: smartestAppsState = {
   loginError$: null,
   afterlogin$: localStorage.getItem('login') ? true : false,
   favoriteMealList: [], // Initialize with an empty array
+  selectedMeal: null, // Initialize with null
 };
 
 export const smartestAppsStore = signalStore(
@@ -81,6 +84,12 @@ export const smartestAppsStore = signalStore(
     ),
     showLoader: rxMethod<boolean>((show) =>
       show.pipe(tap((show) => patchState(store, { loader: show })))
+    ),
+    setSelectedMeal: rxMethod<Meal | null>((meal) =>
+      meal.pipe(tap((meal) => patchState(store, { selectedMeal: meal })))
+    ),
+    setMenuStatus: rxMethod<menuStatus>((menuStatus) =>
+      menuStatus.pipe(tap((menuStatus) => patchState(store, { menuStatus })))
     ),
   }))
 );

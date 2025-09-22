@@ -23,9 +23,7 @@ export class LoginGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    console.log('LoginGuard activated');
-    console.log(this.storeDara.afterlogin$());
-    if (this.storeDara.afterlogin$()) {
+    if (this.storeDara.login$()) {
       return true;
     }
     sessionStorage.setItem('return', `/${route.url.toString()}`);

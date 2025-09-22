@@ -1,0 +1,189 @@
+.popup-background {
+  transition: 0.3s all ease-in-out;
+  opacity: 1;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.384);
+  top: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 490px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.hidden {
+    transition: 0.3s all ease-in-out;
+    opacity: 0;
+    z-index: -1;
+  }
+  .popup {
+    position: relative;
+    margin: auto auto;
+    background-color: var(--c-silver);
+    top: 100px;
+    width: 85%;
+    height: fit-content;
+    max-height: 400px;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 1px 1px 15px black;
+    overflow: hidden;
+    overflow-y: scroll;
+    z-index: 9999;
+
+    .close-btn {
+      position: sticky;
+      top: 0;
+      padding: 12px 12px;
+      cursor: pointer;
+      background: var(--c-grey);
+      z-index: 9;
+      color: var(--c-dark-blue);
+      text-align: right;
+      &:hover {
+        color: var(--c-silver);
+        transition: 0.2s color ease-in-out;
+      }
+    }
+    .title {
+      text-align: center;
+      margin: 20px auto;
+      color: var(--c-dark-blue);
+      font-size: 22px;
+      font-weight: 600;
+      width: 200px;
+      pointer-events: none;
+    }
+
+    form {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 25px;
+      padding-bottom: 25px;
+
+      .input-div {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        &.checkbox {
+          display: flex;
+          flex-wrap: wrap;
+          flex-direction: row;
+          justify-content: left;
+          align-items: center;
+          width: 250px;
+          label {
+            position: relative !important;
+            top: 0;
+            left: 0;
+          }
+          input {
+            width: max-content;
+            height: auto;
+            &:focus ~ label,
+            &:not(:placeholder-shown) ~ label {
+              position: relative;
+              top: 0px;
+            }
+          }
+          input[type="checkbox"] {
+            border-inline-color: var(--c-blue);
+          }
+          .error {
+            position: relative;
+            bottom: 0;
+            padding-left: 25px;
+            margin-top: 3px;
+            color: var(--c-dark-blue);
+            font-size: 12px;
+            font-weight: 600;
+            left: 0;
+          }
+        }
+
+        label {
+          position: absolute;
+          transition: 0.3s all ease-in-out;
+          pointer-events: none;
+
+          left: 15px;
+          top: 8px;
+          background-color: var(--c-silver);
+          text-shadow: 1px 1px 1px var(--c-silver);
+        }
+
+        input {
+          border-radius: 30px;
+          background-color: transparent;
+          width: 250px;
+          height: 30px;
+          padding-left: 15px;
+          padding-right: 15px;
+          transition: 0.3s all ease-in-out;
+
+          &:focus ~ label,
+          &:not(:placeholder-shown) ~ label {
+            position: absolute;
+            transition: 0.3s all ease-in-out;
+            top: -8px;
+            color: var(--c-dark-blue);
+            font-weight: 600;
+          }
+        }
+        .error {
+          position: absolute;
+          bottom: -15px;
+          color: var(--c-dark-blue);
+          font-size: 12px;
+          font-weight: 600;
+          left: 15px;
+        }
+      }
+      .sbm-btn {
+        background-color: var(--c-dark);
+        border: 0px transparent;
+        border-radius: 30px;
+        padding: 12px 30px;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+        color: var(--c-dark-blue);
+
+        &:disabled {
+          background-color: transparent;
+          border: 1px solid var(--c-dark-blue);
+
+          &:hover {
+            background-color: transparent;
+            border: 1px solid var(--c-dark-blue);
+            box-shadow: 1px 1px 15px transparent;
+          }
+        }
+
+        &:hover {
+          box-shadow: 1px 1px 15px var(--c-dark);
+          transition: all 0.3s ease-in-out;
+          color: var(--c-dark-blue);
+        }
+      }
+    }
+  }
+}
+::-webkit-scrollbar {
+  width: 0px;
+}
+::-webkit-scrollbar-thumb {
+  position: absolute;
+  border-radius: 15px;
+  background-color: transparent;
+  /*or any height and color you want*/
+}
+::-webkit-scrollbar-track {
+  background-color: var(--c-grey);
+  border-radius: 15px;
+}

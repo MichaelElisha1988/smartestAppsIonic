@@ -1,0 +1,84 @@
+<div class="popup-background" [ngClass]="hidden ? 'hidden' : ''">
+  <div class="popup">
+    <div class="close-btn" (click)="onPopup(true)">close</div>
+    <div class="title">Add task to your list from here:</div>
+    <form (submit)="addTask($event)" [formGroup]="taskform">
+      <div class="input-div">
+        <input
+          placeholder=" "
+          type="text"
+          id="task"
+          name="task"
+          formControlName="task"
+        />
+        <label for="task">task</label>
+        @if(taskform.controls['task'].errors &&
+        taskform.controls['task'].touched){
+        <div class="error">* task name input cannot be empty</div>
+        }
+      </div>
+      <!-- <div class="input-div">
+        <input
+          placeholder=" "
+          type="text"
+          id="author"
+          name="author"
+          formControlName="author"
+        />
+        <label for="author">author</label>
+        <div
+          class="error"
+          *ngIf="
+            taskform.controls['author'].errors &&
+            taskform.controls['author'].touched
+          "
+        >
+          * author name input cannot be empty
+        </div>
+      </div> -->
+      <div class="input-div">
+        <input
+          placeholder=" "
+          type="date"
+          id="date"
+          name="date"
+          formControlName="date"
+        />
+        <label for="date">Due date</label>
+        <div class="error">* Leave empty if the due date is today</div>
+      </div>
+      <!-- <div class="input-div">
+        <input
+          placeholder=" "
+          type="text"
+          id="status"
+          name="status"
+          formControlName="status"
+        />
+        <label for="status">status</label>
+        <div
+          class="error"
+          *ngIf="
+            taskform.controls['status'].errors &&
+            taskform.controls['status'].touched
+          "
+        >
+          * status name input cannot be empty
+        </div>
+      </div> -->
+      <div class="input-div checkbox">
+        <input
+          type="checkbox"
+          id="isCheckBox"
+          name="isCheckBox"
+          formControlName="isCheckBox"
+        />
+        <label for="isCheckBox">Checkbox Style?</label>
+        <div class="error">Unchecked - task / Checked Checkbox</div>
+      </div>
+      <button type="submit" class="sbm-btn" [disabled]="this.taskform.invalid">
+        Add task
+      </button>
+    </form>
+  </div>
+</div>

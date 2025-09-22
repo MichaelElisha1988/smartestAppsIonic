@@ -11,12 +11,14 @@ import { FirebaseApp, initializeApp } from 'firebase/app';
 import { environment } from 'src/environments/environment';
 import { getFirestore } from 'firebase/firestore';
 import { GeneralDataService } from './general-data.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LoginService {
   dataStore = inject(GeneralDataService).appDataStore;
+  router = inject(Router);
   private readonly firebaseConfig = {
     apiKey: environment.apiKey,
     authDomain: environment.authDomain,
@@ -63,7 +65,6 @@ export class LoginService {
   }
   signIn(email: string, password: string) {
     const auth = getAuth();
-    console.log(auth);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential: any) => {
         // Signed up
@@ -82,6 +83,10 @@ export class LoginService {
   }
   logOut() {
     const auth = getAuth();
+    this.dataStore.setAfterLogin(false);
+    this.dataStore.setLogin(null);
+    localStorage.removeItem('login');
+    this.router.navigate(['home']);
     signOut(auth);
   }
 }

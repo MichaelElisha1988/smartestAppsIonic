@@ -14,15 +14,28 @@ import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { GeneralDataService } from './app/services/general-data.service';
-
 import { inject, provideAppInitializer } from '@angular/core';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { LoaderInterceptor } from './app/services/loader.intercepter';
 
 export function initializeData(generalDataSrv: GeneralDataService): void {
-  console.log('Initializing data from JSON');
   generalDataSrv.getDataFromJson();
 }
+
+import { HttpInterceptorFn } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { smartestAppsStore } from './app/services/data-store.service';
+
+export const loaderInterceptor: HttpInterceptorFn = (req, next) => {
+  const loaderService = inject(smartestAppsStore);
+  loaderService.showLoader(true);
+
+  return next(req).pipe(finalize(() => loaderService.showLoader(false)));
+};
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -30,12 +43,12 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideAnimations(),
-    provideHttpClient(),
-    provideAppInitializer(() => initializeData(inject(GeneralDataService))),
+    provideHttpClient(withInterceptors([loaderInterceptor])),
     {
-      provide: 'HTTP_INTERCEPTORS',
+      provide: HTTP_INTERCEPTORS,
       useClass: LoaderInterceptor,
       multi: true,
     },
+    provideAppInitializer(() => initializeData(inject(GeneralDataService))),
   ],
 });

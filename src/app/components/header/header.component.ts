@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GeneralDataService } from 'src/app/services/general-data.service';
+import { LoginService } from 'src/app/services/login.service';
 
 @Component({
   selector: 'app-header',
@@ -24,6 +25,7 @@ export class HeaderComponent {
   isOpenBurger: boolean = false;
   router = inject(Router);
   appDataStore = inject(GeneralDataService).appDataStore;
+  loginService = inject(LoginService);
 
   constructor() {}
 
@@ -32,5 +34,10 @@ export class HeaderComponent {
   relocate(nav: string) {
     this.isOpenBurger = false;
     this.router.navigate([nav]);
+  }
+
+  logOut() {
+    this.isOpenBurger = false;
+    this.loginService.logOut();
   }
 }

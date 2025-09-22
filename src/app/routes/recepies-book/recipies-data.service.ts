@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, debounceTime } from 'rxjs';
-import { MealModel } from 'src/app/models/meal.model';
+import { Observable } from 'rxjs';
+import { Meal, MealModel } from 'src/app/models/meal.model';
 
 @Injectable({
   providedIn: 'root',

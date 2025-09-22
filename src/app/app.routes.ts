@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginGuard } from './guards/login.guard';
+import { RecepieItemPage } from './routes/recepies-book/recepie-item/recepie-item.page';
 
 export const routes: Routes = [
   {
@@ -32,8 +33,20 @@ export const routes: Routes = [
     canActivate: [LoginGuard],
   },
   {
+    path: 'recepies-book/:id',
+    component: RecepieItemPage,
+    canActivate: [LoginGuard],
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
+  },
+  {
+    path: 'recepie-item',
+    loadComponent: () =>
+      import('./routes/recepies-book/recepie-item/recepie-item.page').then(
+        (m) => m.RecepieItemPage
+      ),
   },
 ];

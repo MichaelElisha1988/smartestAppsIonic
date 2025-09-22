@@ -160,7 +160,6 @@ export class DataService {
           this.ListIdChgSubject.next(this.selectedId);
         });
       });
-    console.log(tmpListId);
 
     return this.listId;
   }
@@ -238,7 +237,6 @@ export class DataService {
         this.taskList = tmpTaskList;
         this.TaskListSubject.next(this.taskList);
       });
-    console.log(tmpTaskList);
   }
 
   getSharingEmails() {
@@ -271,8 +269,13 @@ export class DataService {
     getDocs(this.sharedEmailsRef!)
       .then((data) => {
         data.docs.forEach((data) => {
-          console.log(data.data());
-          tmpSharedEmails = { ...(data.data() as SharedEmail), dbId: data.id };
+          tmpSharedEmails = {
+            nameSharedLists: [
+              ...(tmpSharedEmails?.nameSharedLists || []),
+              ...(data.data() as SharedEmail).nameSharedLists,
+            ],
+            dbId: data.id,
+          };
         });
       })
       .then(() => {
@@ -525,19 +528,16 @@ export class DataService {
       return x.listID == listId;
     });
 
+    let tmpTasktoSharedList = this.taskList.filter((x) => {
+      return x.listID == listId;
+    });
+
+    this.deleteList(this.selectedId, allListTasks);
     shareListItem
       ? ((shareListItem!.showSharedList = false),
         (shareListItem!.isShared = true),
         (shareListItem.sharedWith = sheredWithEmail))
       : '';
-
-    let tmpTasktoSharedList = this.taskList.filter((x) => {
-      return x.listID == listId;
-    });
-
-    setTimeout(() => {
-      this.deleteList(this.selectedId, allListTasks);
-    });
 
     let tmpAllowedEmails: SharingEmail;
     let tmpOldAllowedEmails: SharingEmail | undefined | null =

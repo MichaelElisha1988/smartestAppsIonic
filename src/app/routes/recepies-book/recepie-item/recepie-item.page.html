@@ -1,0 +1,29 @@
+<ion-content [fullscreen]="true">
+  <section class="meal-deatails">
+    <img src="{{ recipie?.strMealThumb }}" alt="meak-pic" />
+    <div class="title">{{ recipie?.strMeal }}</div>
+
+    <div class="meal-cook-wrapper">
+      <div
+        class="meal-instructors"
+        [innerHTML]="recipie?.strInstructions"
+      ></div>
+      <ul class="ingredients">
+        @for(ing of recipie | keyvalue; track $index) { @if(recipie &&
+        ing.key.startsWith('strIngredient') && recipie[ing.key] != '' &&
+        recipie[ing.key] != null) {
+        <div class="ingredien-info">
+          <div class="name">{{ recipie[ing.key] }}</div>
+          <div class="amont">{{ recipie['strMeasure' + $index] }}</div>
+          <div
+            class="ingredien-add"
+            (click)="addIng(recipie[ing.key], recipie['strIngredient' + $index])"
+          >
+            +
+          </div>
+        </div>
+        } }
+      </ul>
+    </div>
+  </section>
+</ion-content>

@@ -1,13 +1,13 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>todo-list</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">todo-list</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <section class="todo-list">
+    <user-header></user-header>
+
+    <section>
+      <task-list></task-list>
+    </section>
+
+    <main-footer></main-footer>
+
+    <app-add-task-popup></app-add-task-popup>
+  </section>
 </ion-content>

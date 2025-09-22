@@ -13,6 +13,7 @@ import { RecipiesDataService } from './recipies-data.service';
 import { Meal } from 'src/app/models/meal.model';
 import { smartestAppsStore } from 'src/app/services/data-store.service';
 import { DataService } from 'src/app/services/data.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-recepies-book',
@@ -26,7 +27,7 @@ export class RecepiesBookPage implements OnInit {
     search: new FormControl<string>('', { updateOn: 'change' }),
     searchMeal: new FormControl<number | null>(null, { updateOn: 'change' }),
   });
-
+  router = inject(Router);
   recipiesSrv = inject(RecipiesDataService);
   dataStore = inject(smartestAppsStore);
   dataHttp = inject(DataService);
@@ -38,7 +39,6 @@ export class RecepiesBookPage implements OnInit {
   searchFormValueEffect = toSignal(this.searchForm.valueChanges);
 
   selectedMeal = signal<Meal | null>(null);
-  ViewuserDetail: any;
   searchMealsInStok = signal<Meal[]>([]);
   favoriteMealList = signal<Meal[]>([]);
   tenMealsInStok = signal<Meal[]>([]);
@@ -104,7 +104,6 @@ export class RecepiesBookPage implements OnInit {
   }
 
   ngOnInit() {
-    this.dataStore.showLoader(true);
     for (let i = 0; i < 10; i++) {
       this.recipiesSrv
         .getRandomMeal()
@@ -112,9 +111,6 @@ export class RecepiesBookPage implements OnInit {
         .subscribe((data) => {
           this.tenMealsInStok().push(data.meals[0]);
           i === 0 ? this.selectedMeal.set(data.meals[0]) : null;
-          if (this.tenMealsInStok().length === 10) {
-            this.dataStore.showLoader(false);
-          }
         });
     }
   }
@@ -124,5 +120,9 @@ export class RecepiesBookPage implements OnInit {
       ? (this.notFav = false)
       : (this.notFav = true);
     this.selectedMeal.set(meal);
+  }
+  ViewuserDetail(selectedMeal: Meal) {
+    this.dataStore.setSelectedMeal(selectedMeal);
+    this.router.navigate(['/recepies-book', selectedMeal.idMeal]);
   }
 }

@@ -1,0 +1,84 @@
+<section
+  *ngFor="let task of shownList; let i = index"
+  class="task extend {{ task.id }}"
+  [ngClass]="!task.isCheckBox ? '' : 'isCheckBox'"
+  (click)="closeTaskInfo($event)"
+>
+  <div class="effect-section" *ngIf="!task.isCheckBox"></div>
+  <div
+    class="effect-section checkbox"
+    *ngIf="task.isCheckBox"
+    (click)="didIt($event, task)"
+    [ngClass]="task.didIt ? 'didIt' : ''"
+  ></div>
+  <div class="task-section-info">
+
+    <div class="info-section">
+      <div [attr.taskId]="task.id" class="close" (click)="deleteTask($event)">
+        X
+      </div>
+      <div
+        class="task-item"
+        (click)="!task.editMode ? editTaskName($event, task) : ''"
+      >
+        <span
+          class="task-name"
+          [ngClass]="task.currentStatus == 3 ? 'overline' : ''"
+          *ngIf="!task.editMode; else editTaskInput"
+          >{{ task.task }}</span
+        >
+        <ng-template #editTaskInput>
+          <textarea
+            type="text"
+            class="edit task-name"
+            [value]="task.task"
+            (blur)="subbmitChange($event, task)"
+          ></textarea>
+        </ng-template>
+      </div>
+      <div class="descripption-task" *ngIf="!task.isCheckBox">
+        <!-- <div class="auther-task">author: {{ task.author }}</div> -->
+        <div class="date-task">
+          due date: {{ task.date | date : "dd MM YYYY" }}
+        </div>
+        <div class="status-task">
+          <span
+            *ngIf="task.currentStatus == 1"
+            class="status-state"
+            (click)="taskDone(task)"
+            >{{ task.status }}</span
+          >
+          <span
+            *ngIf="task.currentStatus == 2"
+            class="status-state"
+            (click)="taskDone(task)"
+            >In Progress</span
+          >
+          <span
+            *ngIf="task.currentStatus == 3"
+            class="status-state"
+            (click)="taskDone(task)"
+            >Done</span
+          >
+          <span
+            *ngIf="task.currentStatus == 4"
+            class="status-state"
+            (click)="taskDone(task)"
+            >On Hold</span
+          >
+        </div>
+      </div>
+    </div>
+  
+    <div class="i-icon" *ngIf="task.taskinfo" (click)="shownInfo(task)">
+      <img class="i-icon-img" src="assets/icons8-info.svg" alt="" />
+    </div>
+  </div>
+  <div class="i-info" [ngClass]="task.seeInfo ? 'i-eye' : ''">
+    <ul *ngIf="task.taskinfo">
+      <li *ngFor="let info of task.taskinfo.split(',')!; let i = index">
+        {{ info }}
+      </li>
+    </ul>
+  </div>
+</section>
