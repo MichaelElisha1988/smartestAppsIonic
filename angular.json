@@ -22,7 +22,10 @@
               "base": "docs",
               "browser": ""
             },
-            "index": "src/index.html",
+            "index": {
+              "input": "src/index.html",
+              "preloadInitial": false
+            },
             "polyfills": ["src/polyfills.ts"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
