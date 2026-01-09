@@ -1,0 +1,71 @@
+{
+  "actions": [
+    {
+      "title": "Kitchen",
+      "measurements": [
+        "quart",
+        "teaspoons",
+        "gallon",
+        "pint",
+        "cup",
+        "tablespoons",
+        "gram",
+        "milligram",
+        "kilogram",
+        "pound",
+        "milliliter",
+        "liter",
+        "oz"
+      ],
+      "desity": {
+        "water": 1,
+        "milk": 1.03,
+        "heavy-cream-36p": 0.99,
+        "light-cream-20p": 1.012,
+        "olive-oil": 0.9,
+        "greek-yogurt": 0.96,
+        "rapsid-oil": 0.95,
+        "honey": 1.42,
+        "date-honey": 1.33,
+        "soy-sauce": 1.08,
+        "vinegar": 1.01,
+        "tariaki-sauce": 0.95,
+        "orange-juice": 1.01,
+        "100p-peanut-butter": 1.22,
+        "100p-Thina": 1.01,
+        "mayonnaise": 0.93,
+        "ketchup": 1.15,
+        "lemon-juice": 1.03,
+        "salt": 2.17,
+        "sugar": 0.85,
+        "cornflour": 0.49,
+        "sugar-pounder": 0.85,
+        "white-flour": 0.59,
+        "whole-flour": 0.59,
+        "yeast": 0.81,
+        "buckwheat": 0.72,
+        "lentil": 0.81,
+        "quinoa": 0.72,
+        "brown-sugar": 0.93,
+        "beans-red": 1.08,
+        "beans-white": 0.71,
+        "pearl-barley": 0.85
+      }
+    },
+    {
+      "title": "length",
+      "measurements": [
+        "c-meters",
+        "meters",
+        "k-meters",
+        "inches",
+        "feet",
+        "yards"
+      ]
+    },
+    {
+      "title": "temperature",
+      "measurements": ["Fahr", "Celsius", "Kelvin"]
+    }
+  ]
+}
