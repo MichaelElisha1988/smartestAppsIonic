@@ -86,7 +86,7 @@ export class LoginService {
     this.dataStore.setAfterLogin(false);
     this.dataStore.setLogin(null);
     localStorage.removeItem('login');
-    this.router.navigate(['home']);
     signOut(auth);
+    location.reload();
   }
 }

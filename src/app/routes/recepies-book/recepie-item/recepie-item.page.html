@@ -10,14 +10,15 @@
       ></div>
       <ul class="ingredients">
         @for(ing of recipie | keyvalue; track $index) { @if(recipie &&
-        ing.key.startsWith('strIngredient') && recipie[ing.key] != '' &&
-        recipie[ing.key] != null) {
+        ing.key.includes('strIngredient') && recipie[ing.key] != '') {
         <div class="ingredien-info">
           <div class="name">{{ recipie[ing.key] }}</div>
-          <div class="amont">{{ recipie['strMeasure' + $index] }}</div>
+          <div class="amont">
+            {{ recipie['strMeasure' + ing.key.split('strIngredient')[1]] }}
+          </div>
           <div
             class="ingredien-add"
-            (click)="addIng(recipie[ing.key], recipie['strIngredient' + $index])"
+            (click)="addIng(recipie['strMeasure' + ing.key.split('strIngredient')[1]], recipie[ing.key])"
           >
             +
           </div>

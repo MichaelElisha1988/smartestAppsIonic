@@ -12,7 +12,6 @@
     [ngClass]="task.didIt ? 'didIt' : ''"
   ></div>
   <div class="task-section-info">
-
     <div class="info-section">
       <div [attr.taskId]="task.id" class="close" (click)="deleteTask($event)">
         X
@@ -39,7 +38,7 @@
       <div class="descripption-task" *ngIf="!task.isCheckBox">
         <!-- <div class="auther-task">author: {{ task.author }}</div> -->
         <div class="date-task">
-          due date: {{ task.date | date : "dd MM YYYY" }}
+          due date: {{ task.date | date : "dd MM yyyy" }}
         </div>
         <div class="status-task">
           <span
@@ -69,7 +68,7 @@
         </div>
       </div>
     </div>
-  
+
     <div class="i-icon" *ngIf="task.taskinfo" (click)="shownInfo(task)">
       <img class="i-icon-img" src="assets/icons8-info.svg" alt="" />
     </div>

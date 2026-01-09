@@ -114,22 +114,20 @@ export class DataService {
         if (this.sharingEmails.length > 0) {
           this.sharingEmails.forEach((email) => {
             email.nameSharedLists.forEach((nameList) => {
-              {
-                this.sharedListIdRef = collection(
-                  this.DataBaseApp,
-                  `sharedListId${shajs('sha256')
-                    .update(email.allowedEmail + nameList)
-                    .digest('hex')}`
-                );
-                getDocs(this.sharedListIdRef!).then((data) => {
-                  data.docs.forEach((data) => {
-                    tmpListId.push({
-                      ...(data.data() as ListId),
-                      dbId: data.id,
-                    });
+              this.sharedListIdRef = collection(
+                this.DataBaseApp,
+                `sharedListId${shajs('sha256')
+                  .update(email.allowedEmail + nameList)
+                  .digest('hex')}`
+              );
+              getDocs(this.sharedListIdRef!).then((data) => {
+                data.docs.forEach((data) => {
+                  tmpListId.push({
+                    ...(data.data() as ListId),
+                    dbId: data.id,
                   });
                 });
-              }
+              });
             });
           });
         }
@@ -315,6 +313,9 @@ export class DataService {
       showSharedList: true,
       isShared: false,
       sharedWith: '',
+      sharedBy: localStorage.getItem('login')
+        ? JSON.parse(localStorage.getItem('login')!).email
+        : '',
     };
     addDoc(this.listIdRef!, listItem);
     this.listId.push(listItem);
@@ -527,11 +528,9 @@ export class DataService {
     const allListTasks = this.taskList.filter((x) => {
       return x.listID == listId;
     });
-
     let tmpTasktoSharedList = this.taskList.filter((x) => {
       return x.listID == listId;
     });
-
     this.deleteList(this.selectedId, allListTasks);
     shareListItem
       ? ((shareListItem!.showSharedList = false),
@@ -544,7 +543,6 @@ export class DataService {
       this.sharingEmails.find((x) => {
         return x.allowedEmail == sheredWithEmail;
       });
-
     if (tmpOldAllowedEmails) {
       const dbIdSharingEmail = this.sharingEmails.find((x) => {
         return x.allowedEmail == sheredWithEmail;
@@ -577,7 +575,11 @@ export class DataService {
         .digest('hex')}`
     );
 
-    if (this.sharedEmails && this.sharedEmails?.nameSharedLists.length > 0) {
+    if (
+      this.sharingEmails &&
+      this.sharingEmails?.length > 0 &&
+      this.sharingEmails.find((x) => x.allowedEmail == sheredWithEmail)
+    ) {
       const docSharedRef = doc(
         this.DataBaseApp,
         `sharedEmails${shajs('sha256')
@@ -585,6 +587,7 @@ export class DataService {
           .digest('hex')}`,
         this.sharedEmails?.dbId || ''
       );
+
       if (this.sharedEmails?.dbId) {
         this.sharedEmails.nameSharedLists.push(shareListItem?.name!);
         updateDoc(docSharedRef, { ...this.sharedEmails });
@@ -627,5 +630,14 @@ export class DataService {
     this.getSharedEmails();
     this.getListId();
     this.getTaskList();
+  }
+
+  fordev() {
+    console.log('for dev');
+    console.log(this.sharingEmails);
+    console.log(this.sharedEmails);
+    console.log(this.listId);
+    console.log(this.taskList);
+    console.log(this.dataStore.favoriteMealList());
   }
 }

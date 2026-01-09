@@ -25,7 +25,7 @@
     .list-name {
     }
     .edit-list-name {
-      max-width: min-content;
+      width: fit-content;
       background-color: transparent;
       border: transparent;
     }
@@ -46,10 +46,12 @@
 
   .add-section {
     display: flex;
-    justify-content: left;
+    justify-content: center;
     align-items: center;
     width: fit-content;
-    height: 40px;
+    margin: 10px 0;
+    padding: 5px 10px;
+    flex-wrap: wrap;
     border-radius: 30px;
     &.new-add {
       border: 1px solid var(--c-dark-blue);
@@ -89,6 +91,14 @@
       &:hover {
         box-shadow: 1px 1px 5px var(--c-dark-blue);
       }
+    }
+    .created-by {
+      font-size: 16px;
+      color: var(--c-dark-blue);
+      bottom: 5px;
+      right: 10px;
+      margin: 10px 0;
+      opacity: 0.5;
     }
   }
 

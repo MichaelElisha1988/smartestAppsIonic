@@ -36,11 +36,9 @@ export class RecepieItemPage implements OnInit {
   }
   id: number = 0;
 
-  constructor() {
-    console.log('haha');
-  }
+  constructor() {}
 
-  addIng(ingInfo?: string, addIng?: string) {
+  addIng(ingInfo: string, addIng: string) {
     let tmpListId: ListId[] = this.dataSrv.getListId();
     let shoppingListId = tmpListId.find((x: ListId) => {
       return x.name == 'shopping list';
@@ -53,10 +51,8 @@ export class RecepieItemPage implements OnInit {
       : this.dataSrv.updateFavoriteMeal(this.recipie!.strMeal);
     if (shoppingListId) {
       this.dataSrv.setSelectedListId(shoppingListId!.id);
-      this.createTaskModel(ingInfo ? ingInfo : '', addIng ? addIng : '')
-        ? this.dataSrv.updateTaskList(
-            this.createTaskModel(ingInfo ? ingInfo : '', addIng ? addIng : '')!
-          )
+      this.createTaskModel(ingInfo, addIng)
+        ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
         : '';
     } else {
       this.dataSrv.updateListId('shopping list');
@@ -65,39 +61,45 @@ export class RecepieItemPage implements OnInit {
         return x.name == 'shopping list';
       });
       this.dataSrv.setSelectedListId(shoppingListId!.id);
-      this.createTaskModel(ingInfo ? ingInfo : '', addIng ? addIng : '')
-        ? this.dataSrv.updateTaskList(
-            this.createTaskModel(ingInfo ? ingInfo : '', addIng ? addIng : '')!
-          )
+      this.createTaskModel(ingInfo, addIng)
+        ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
         : '';
     }
   }
 
   createTaskModel(ingInfo: string, addIng: string): TaskModel | null {
-    let task = this.dataSrv.taskList.find((x) => {
-      return x.task.toLowerCase() == addIng.toLowerCase();
-    });
-    if (task) {
-      task.taskinfo =
-        task.taskinfo + ',' + this.recipie!.strMeal + ' - ' + ingInfo;
-      this.dataSrv.updateTaskData(task);
+    if (ingInfo && addIng) {
+      let task = this.dataSrv.taskList.find((x) => {
+        return x.task.toLowerCase() == addIng.toLowerCase();
+      });
+      if (task) {
+        task.taskinfo =
+          task.taskinfo + ',' + this.recipie!.strMeal + ' - ' + ingInfo;
+        this.dataSrv.updateTaskData(task);
+        return null;
+      } else {
+        return {
+          listID: 0,
+          id: 0,
+          task: addIng ? addIng : '',
+          taskinfo: this.recipie!.strMeal + ' - ' + ingInfo,
+          author: this.loginName,
+          date: new Date().getDate().toString(),
+          status: 'false',
+          currentStatus: 1,
+          editMode: false,
+          seeInfo: false,
+          color: Math.floor(Math.random() * 16777215).toString(16),
+          isCheckBox: true,
+          didIt: false,
+        };
+      }
+    }
+    {
+      alert(
+        'Something went wrong, ingredient not added: ' + ingInfo + ', ' + addIng
+      );
       return null;
-    } else {
-      return {
-        listID: 0,
-        id: 0,
-        task: addIng ? addIng : '',
-        taskinfo: this.recipie!.strMeal + ' - ' + ingInfo,
-        author: this.loginName,
-        date: new Date().getDate().toString(),
-        status: 'false',
-        currentStatus: 1,
-        editMode: false,
-        seeInfo: false,
-        color: Math.floor(Math.random() * 16777215).toString(16),
-        isCheckBox: true,
-        didIt: false,
-      };
     }
   }
 

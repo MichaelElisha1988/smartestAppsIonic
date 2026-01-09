@@ -1,20 +1,13 @@
 import {
-  AfterViewInit,
   Component,
   effect,
   ElementRef,
   inject,
-  Input,
-  OnInit,
   signal,
+  viewChild,
   ViewChild,
 } from '@angular/core';
-import {
-  EmailValidator,
-  FormControl,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TaskComponent } from './task/task.component';
 import { ListId } from 'src/app/models/list-id.model';
@@ -27,9 +20,9 @@ import { DataService } from 'src/app/services/data.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TaskComponent],
 })
-export class TaskListComponent implements OnInit, AfterViewInit {
+export class TaskListComponent {
   listId = signal<ListId[]>([]);
-  selectedListId = signal(0);
+  selectedListIndex = signal(0);
   addActive = signal(false);
   listEdit = signal(false);
   movearound = signal(0);
@@ -45,35 +38,33 @@ export class TaskListComponent implements OnInit, AfterViewInit {
 
   constructor() {
     this.dataSrv.ListId$.subscribe((listId) => {
-      this.listId.set(listId);
+      setTimeout(() => {
+        this.listId.set(listId);
+        this.selectedListIndex.set(0);
+        this.dataSrv.setSelectedListId(this.listId()[0]?.id);
+      }, 1000);
     });
-
     effect(() => {
-      if (this.listId.length > 0 && this.selectedListId() === 0) {
-        this.selectedListId.set(0);
-        this.dataSrv.setSelectedListId(this.listId()[0].id);
-        this.selectListId(null, this.listId()[0], 0);
+      if (this.listId().length > 0) {
+        this.selectedListIndex.set(0);
+        this.dataSrv.setSelectedListId(this.listId()[0]?.id);
       }
     });
     effect(() => {
-      this.showSharedList.set(this.listId()[this.selectedListId()]?.isShared);
+      this.showSharedList.set(
+        this.listId()[this.selectedListIndex()]?.isShared
+      );
     });
     effect(() => {
       if (this.listId().length > 0) {
         this.dataSrv.setSelectedListId(
-          this.listId()[this.selectedListId()]?.id
+          this.listId()[this.selectedListIndex()]?.id
         );
-      } else {
-        this.dataSrv.setSelectedListId(0);
       }
     });
   }
 
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {}
-
-  addListId(event: any) {
+  addListId() {
     if (!this.addActive()) {
       this.addInput!.nativeElement.value = '';
       this.addActive.set(true);
@@ -89,8 +80,8 @@ export class TaskListComponent implements OnInit, AfterViewInit {
     return this.dataSrv.getSelectedListId();
   }
 
-  selectListId(event: any, list: ListId, index: number) {
-    this.selectedListId.set(index);
+  selectListId(event: any, index: number) {
+    this.selectedListIndex.set(index);
     this.dataSrv.taskList.map((x) => {
       x.seeInfo = false;
     });
@@ -103,7 +94,7 @@ export class TaskListComponent implements OnInit, AfterViewInit {
       +(listParent as HTMLElement)?.attributes?.getNamedItem('listId')
         ?.value! == this.getSelectedListId()
     ) {
-      list.editMode = true;
+      this.listEdit.set(true);
       setTimeout(() => {
         if ((listParent as HTMLElement)?.children != undefined) {
           ((listParent as HTMLElement).children[0] as HTMLInputElement).focus();
@@ -124,13 +115,14 @@ export class TaskListComponent implements OnInit, AfterViewInit {
       }
     }
   }
+
   updateListName(event: any, list: ListId) {
     if (list.name != event.target.value && event.target.value != '') {
       list.name = event.target.value;
-      list.editMode = false;
+      this.listEdit.set(false);
       this.dataSrv.updateListData(list);
     } else {
-      list.editMode = false;
+      this.listEdit.set(false);
     }
   }
 
@@ -147,11 +139,24 @@ export class TaskListComponent implements OnInit, AfterViewInit {
   }
 
   shareList() {
-    let listId = this.getSelectedListId();
-    this.showSharedList.set(false);
-    this.dataSrv.createSharedList(
-      listId,
-      this.shareWithEmail.value!.toLocaleLowerCase()
-    );
+    if (
+      !this.shareWithEmail.invalid &&
+      this.shareWithEmail.value !=
+        JSON.parse(localStorage.getItem('login')!).email
+    ) {
+      let listId = this.getSelectedListId();
+      this.showSharedList.set(false);
+      console.log(this.shareWithEmail.value!.toLocaleLowerCase());
+      this.dataSrv.createSharedList(
+        listId,
+        this.shareWithEmail.value!.toLocaleLowerCase()
+      );
+      this.shareWithEmail.setValue('');
+    } else {
+      alert('Cannot share with this email');
+    }
+  }
+  fordev() {
+    this.dataSrv.fordev();
   }
 }

@@ -7,4 +7,5 @@ export interface ListId {
   showSharedList: boolean;
   isShared: boolean;
   sharedWith: string;
+  sharedBy: string;
 }

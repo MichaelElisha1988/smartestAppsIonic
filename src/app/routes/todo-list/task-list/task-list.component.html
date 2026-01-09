@@ -4,25 +4,25 @@
       {{ "←" }}
     </button>
   </div> -->
-  <section class="list-menu" #ListId>
+  <section class="list-menu">
     @for(list of listId(); track $index){
     <div
       class="list"
-      [class.selected]="$index === selectedListId()"
-      (click)="selectListId($event, list, $index)"
+      [class.selected]="$index === selectedListIndex()"
+      (click)="selectListId($event, $index)"
       [attr.listId]="list.id"
     >
-      @if(!list.editMode){
-      <span class="list-name">{{ list.name }}</span>
+      @if(listEdit() === true && $index === selectedListIndex()){
+      <input
+        type="text"
+        (blur)="updateListName($event, list)"
+        [value]="list.name"
+        class="edit-list-name"
+      />
       }@else{
-      <ng-template>
-        <input
-          type="text"
-          (blur)="updateListName($event, list)"
-          [value]="list.name"
-          class="edit-list-name"
-        />
-      </ng-template>
+      <span class="list-name">{{
+        list.name + (list.sharedWith ? " (shared)" : "")
+      }}</span>
       }
     </div>
     }
@@ -34,12 +34,17 @@
       [class.new-add]="addActive()"
       #addInput
     />
-    <div (click)="addListId($event)" class="add-list">
+    <div (click)="addListId()" class="add-list">
       {{ addActive() ? "Ok" : "Add List" }}
     </div>
     <div (click)="deleteList()" class="add-list">
       {{ "Remove List" }}
     </div>
+    @if(listId().length > 0 && listId()[selectedListIndex()].isShared){
+    <div class="created-by">
+      Created by: {{ listId()[selectedListIndex()].sharedBy }}
+    </div>
+    }
   </div>
 
   <!-- <div class="scroll-arrows right">
@@ -56,7 +61,6 @@
       placeholder="To share with in Email"
     />
     <button
-      _ngcontent-xpv-c28=""
       class="share-list"
       [disabled]="!shareWithEmail.valid"
       (click)="shareList()"
@@ -67,3 +71,4 @@
   }
 </div>
 <task class="tasks"></task>
+<button (click)="fordev()">For Dev></button>
