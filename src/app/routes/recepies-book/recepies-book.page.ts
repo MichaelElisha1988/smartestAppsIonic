@@ -106,13 +106,10 @@ export class RecepiesBookPage implements OnInit {
   ngOnInit() {
     const mealList: Meal[] = [];
     for (let i = 0; i < 10; i++) {
-      this.recipiesSrv
-        .getRandomMeal()
-        .pipe(take(1))
-        .subscribe((data) => {
-          mealList.push(data.meals[0]);
-          i === 0 ? this.selectedMeal.set(data.meals[0]) : null;
-        });
+      this.recipiesSrv.getRandomMeal().subscribe((data) => {
+        mealList.push(data.meals[0]);
+        i === 0 ? this.selectedMeal.set(data.meals[0]) : null;
+      });
     }
     this.tenMealsInStok = mealList;
   }
