@@ -168,6 +168,7 @@ table {
   --c-dark: #0b0c10;
   --c-grey: #1f2833;
   --c-silver: #c5c6c7;
+  --c-silver-transparent: #c5c6c733;
   --c-blue: #66fcf1;
   --c-dark-blue: #45a29e;
 }
@@ -180,4 +181,10 @@ input {
 
 html.plt-mobile ion-app {
   margin-top: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.md {
+    --ion-background-color: var(--c-silver-transparent) !important;
+  }
 }
