@@ -41,7 +41,7 @@ export class RecepiesBookPage implements OnInit {
   selectedMeal = signal<Meal | null>(null);
   searchMealsInStok = signal<Meal[]>([]);
   favoriteMealList = signal<Meal[]>([]);
-  tenMealsInStok = signal<Meal[]>([]);
+  tenMealsInStok: Meal[] = [];
 
   constructor() {
     effect(() => {
@@ -104,15 +104,17 @@ export class RecepiesBookPage implements OnInit {
   }
 
   ngOnInit() {
+    const mealList: Meal[] = [];
     for (let i = 0; i < 10; i++) {
       this.recipiesSrv
         .getRandomMeal()
         .pipe(take(1))
         .subscribe((data) => {
-          this.tenMealsInStok().push(data.meals[0]);
+          mealList.push(data.meals[0]);
           i === 0 ? this.selectedMeal.set(data.meals[0]) : null;
         });
     }
+    this.tenMealsInStok = mealList;
   }
 
   selectMeal(meal: Meal) {

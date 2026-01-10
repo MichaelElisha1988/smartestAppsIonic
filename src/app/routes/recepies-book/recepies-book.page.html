@@ -81,11 +81,11 @@
       </div>
     </div>
 
-    @if(tenMealsInStok()){ }
+    @if(tenMealsInStok){
     <div class="random-list-wrapper">
       <h2 class="random">Random Recipies :</h2>
       <div class="random-list">
-        @for(meal of tenMealsInStok(); track $index){
+        @for(meal of tenMealsInStok; track $index){
         <div class="recipie-item-small">
           <img
             class="back-img"
@@ -97,5 +97,6 @@
         }
       </div>
     </div>
+    }
   </section>
 </ion-content>
