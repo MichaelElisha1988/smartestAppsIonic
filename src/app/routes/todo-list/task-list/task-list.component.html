@@ -37,10 +37,12 @@
     <div (click)="addListId()" class="add-list">
       {{ addActive() ? "Ok" : "Add List" }}
     </div>
+    @if (!addActive()) {
     <div (click)="deleteList()" class="add-list">
       {{ "Remove List" }}
     </div>
-    @if(listId().length > 0 && listId()[selectedListIndex()].isShared){
+    } @if(listId().length > 0 && listId()[selectedListIndex()].isShared &&
+    !addActive()){
     <div class="created-by">
       Created by: {{ listId()[selectedListIndex()].sharedBy }}
     </div>
@@ -71,4 +73,4 @@
   }
 </div>
 <task class="tasks"></task>
-<button (click)="fordev()">For Dev></button>
+<!-- <button (click)="fordev()">For Dev></button> -->

@@ -106,12 +106,14 @@ export class LoginPage {
         this.loginForm.controls.usenName.value!,
         this.loginForm.controls.password.value!
       );
+      this.loaderService.showLoader(true);
       setTimeout(() => {
         if (sessionStorage.getItem('return')) {
           this.router.navigate([sessionStorage.getItem('return')]);
         } else {
           this.router.navigate(['']);
         }
+        this.loaderService.showLoader(false);
       }, 1000);
     }
   }
