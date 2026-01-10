@@ -77,7 +77,11 @@ export class LoginService {
       })
       .catch((error: any) => {
         const errorCode = error.code;
-        this.dataStore.setLoginError(error.message);
+        this.dataStore.setLoginError(
+          error.code.includes('auth')
+            ? 'Invalid email or password'
+            : 'Unexpected error occurred. Please try again later.'
+        );
         // ..
       });
   }

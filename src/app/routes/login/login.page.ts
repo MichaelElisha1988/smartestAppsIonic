@@ -10,6 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
+import { GeneralDataService } from 'src/app/services/general-data.service';
+import { smartestAppsStore } from 'src/app/services/data-store.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +30,8 @@ import { LoginService } from '../../services/login.service';
 })
 export class LoginPage {
   loginSrv = inject(LoginService);
+  loaderService = inject(smartestAppsStore);
+  dataStore = inject(GeneralDataService).appDataStore;
   router = inject(Router);
   loginForm = new FormGroup({
     usenName: new FormControl('', {
@@ -75,15 +79,27 @@ export class LoginPage {
           this.loginForm.controls.usenName.value!,
           this.loginForm.controls.password.value!
         ),
+          this.loaderService.showLoader(true);
+        setTimeout(() => {
+          this.isRegister = false;
+          this.loginSrv.signIn(
+            this.loginForm.controls.usenName.value!,
+            this.loginForm.controls.password.value!
+          );
+          this.dataStore.setLoginError('');
           setTimeout(() => {
-            this.loginSrv.signIn(
-              this.loginForm.controls.usenName.value!,
-              this.loginForm.controls.password.value!
-            );
+            if (sessionStorage.getItem('return')) {
+              this.router.navigate([sessionStorage.getItem('return')]);
+            } else {
+              this.router.navigate(['']);
+            }
           }, 1000);
+          this.loaderService.showLoader(false);
+        }, 1000);
       } else {
-        this.errorMsg =
-          'Please make sure that the Email is currect and the password is eqal';
+        this.dataStore.setLoginError(
+          'Please make sure that the Email is currect and the password is eqal'
+        );
       }
     } else {
       this.loginSrv.signIn(

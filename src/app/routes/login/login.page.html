@@ -56,7 +56,7 @@
         </form>
 
         <div class="coming-soon">
-          <span>{{ errorMsg }}</span>
+          <span>{{ this.dataStore.loginError() }}</span>
           <button (click)="register()">
             {{ isRegister ? "Click here to Log-in" : "Click here to Register" }}
           </button>

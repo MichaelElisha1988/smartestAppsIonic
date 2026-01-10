@@ -19,7 +19,7 @@ export interface smartestAppsState {
     density: FormControl<string>;
   }>;
   login$: any; // Placeholder for login observable
-  loginError$: any; // Placeholder for login error observable
+  loginError: string; // Placeholder for login error observable
   afterlogin$: any; // Placeholder for after login subject
   favoriteMealList: { dbId?: string; id: number; name: string }[];
   selectedMeal: Meal | null;
@@ -37,7 +37,7 @@ const initialState: smartestAppsState = {
   login$: localStorage.getItem('login')
     ? JSON.parse(localStorage.getItem('login')!)
     : null,
-  loginError$: null,
+  loginError: '',
   afterlogin$: localStorage.getItem('login') ? true : false,
   favoriteMealList: [], // Initialize with an empty array
   selectedMeal: null, // Initialize with null
@@ -70,9 +70,9 @@ export const smartestAppsStore = signalStore(
         tap((afterLogin) => patchState(store, { afterlogin$: afterLogin }))
       )
     ),
-    setLoginError: rxMethod<any>((errorMsg) =>
+    setLoginError: rxMethod<string>((errorMsg) =>
       errorMsg.pipe(
-        tap((errorMsg) => patchState(store, { loginError$: errorMsg }))
+        tap((errorMsg) => patchState(store, { loginError: errorMsg }))
       )
     ),
     setFavoriteMealList: rxMethod<
