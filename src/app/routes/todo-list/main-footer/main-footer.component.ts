@@ -47,7 +47,7 @@ export class MainFooterComponent implements OnInit, OnDestroy {
 
   openAddTask() {
     this.addTaskMode = !this.addTaskMode;
-    if (!this.addTaskMode) {
+    if (!this.addTaskMode && this.taskform.controls.title.value) {
       this.dataSrv.updateTaskList(this.createTaskModel());
     } else {
       this.taskform.reset();
