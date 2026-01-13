@@ -1,11 +1,18 @@
 <div class="footer-container">
   <section class="copy-right">© Year 2024</section>
-  <button
-    class="fast-add-list"
-    (click)="openAddTask()"
-    [disabled]="!listIdIsEmpty"
-  >
-    <div class="line"></div>
-    <div class="line rotate"></div>
-  </button>
+  <div class="fast-add-list" [class.add-mode]="addTaskMode">
+    @if(!addTaskMode) {
+    <div class="plus" (click)="openAddTask()">
+      <div class="line"></div>
+      <div class="line rotate"></div>
+    </div>
+    } @else {
+    <form (submit)="openAddTask()" [formGroup]="taskform">
+      <input type="text" formControlName="title" />
+      <button class="add-btn" type="submit">
+        {{ taskform.controls.title.value ? "Add" : "close" }}
+      </button>
+    </form>
+    }
+  </div>
 </div>

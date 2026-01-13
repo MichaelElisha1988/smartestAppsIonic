@@ -36,22 +36,60 @@
 
     z-index: 99;
     border: 3px solid var(--c-dark-blue);
-    &:disabled {
-      .line {
-        background-color: var(--c-blue);
-        opacity: 0.5;
-      }
-      &:hover {
-        scale: 1;
-        box-shadow: 1px 1px 10px var(--c-silver);
-        color: var(--c-silver);
 
-        .line {
-          background-color: var(--c-dark-blue);
-          opacity: 0.5;
+    &.add-mode {
+      background-color: var(--c-blue);
+      width: auto;
+      height: auto;
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 3px solid var(--c-dark-blue);
+
+      .line {
+        display: none;
+      }
+
+      input {
+        font-size: 16px;
+        padding: 5px 10px;
+        border: 2px solid var(--c-dark-blue);
+        border-radius: 10px;
+        outline: none;
+      }
+      .add-btn {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 5px 15px;
+        background-color: var(--c-dark-blue);
+        color: var(--c-silver);
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease-in-out;
+
+        &:hover {
+          background-color: var(--c-blue);
+          box-shadow: 1px 1px 10px var(--c-silver);
         }
       }
     }
+
+    // &:disabled {
+    //   .line {
+    //     background-color: var(--c-blue);
+    //     opacity: 0.5;
+    //   }
+    //   &:hover {
+    //     scale: 1;
+    //     box-shadow: 1px 1px 10px var(--c-silver);
+    //     color: var(--c-silver);
+
+    //     .line {
+    //       background-color: var(--c-dark-blue);
+    //       opacity: 0.5;
+    //     }
+    //   }
+    // }
 
     &:hover {
       scale: 1.2;
