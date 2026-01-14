@@ -38,7 +38,7 @@
     border: 3px solid var(--c-dark-blue);
 
     &.add-mode {
-      background-color: var(--c-blue);
+      background-color: var(--c-silver);
       width: auto;
       height: auto;
       padding: 10px 20px;
@@ -67,10 +67,10 @@
         font-weight: 600;
         transition: all 0.3s ease-in-out;
 
-        &:hover {
-          background-color: var(--c-blue);
-          box-shadow: 1px 1px 10px var(--c-silver);
-        }
+        // &:hover {
+        //   background-color: var(--c-blue);
+        //   box-shadow: 1px 1px 10px var(--c-silver);
+        // }
       }
     }
 
@@ -91,15 +91,15 @@
     //   }
     // }
 
-    &:hover {
-      scale: 1.2;
-      box-shadow: 1px 1px 10px var(--c-silver);
-      color: var(--c-silver);
+    // &:hover {
+    //   scale: 1.2;
+    //   box-shadow: 1px 1px 10px var(--c-silver);
+    //   color: var(--c-silver);
 
-      .line {
-        background-color: var(--c-blue);
-      }
-    }
+    //   .line {
+    //     background-color: var(--c-blue);
+    //   }
+    // }
 
     // &:before {
     //   width: 1200px;
