@@ -55,7 +55,13 @@
     </button>
   </div> -->
   @if(!showSharedList()){
+  <div class="share-toggle-wrapper">
+    <button class="toggle-share-btn" (click)="isShareBoxVisible.set(!isShareBoxVisible())">
+      {{ isShareBoxVisible() ? 'Hide Share Options' : 'Share List' }}
+    </button>
+  </div>
 
+  @if(isShareBoxVisible()) {
   <div class="share-list box">
     <input
       [formControl]="shareWithEmail"
@@ -70,6 +76,7 @@
       Share Selected Task List
     </button>
   </div>
+  }
   }
 </div>
 <task class="tasks"></task>

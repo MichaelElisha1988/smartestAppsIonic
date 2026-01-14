@@ -102,19 +102,20 @@ export class LoginPage {
         );
       }
     } else {
+      this.loaderService.showLoader(true);
       this.loginSrv.signIn(
         this.loginForm.controls.usenName.value!,
         this.loginForm.controls.password.value!
-      );
-      this.loaderService.showLoader(true);
-      setTimeout(() => {
+      ).then(() => {
+        this.loaderService.showLoader(false);
         if (sessionStorage.getItem('return')) {
           this.router.navigate([sessionStorage.getItem('return')]);
         } else {
-          this.router.navigate(['']);
+          this.router.navigate(['home']); // Navigate explicitly to home
         }
+      }).catch(() => {
         this.loaderService.showLoader(false);
-      }, 1000);
+      });
     }
   }
 }

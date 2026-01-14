@@ -65,7 +65,7 @@ export class LoginService {
   }
   signIn(email: string, password: string) {
     const auth = getAuth();
-    signInWithEmailAndPassword(auth, email, password)
+    return signInWithEmailAndPassword(auth, email, password)
       .then((userCredential: any) => {
         // Signed up
         const user = userCredential?.user;
@@ -82,7 +82,7 @@ export class LoginService {
             ? 'Invalid email or password'
             : 'Unexpected error occurred. Please try again later.'
         );
-        // ..
+        throw error; // Re-throw so component knows it failed
       });
   }
   logOut() {

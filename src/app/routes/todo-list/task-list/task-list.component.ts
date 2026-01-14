@@ -27,6 +27,7 @@ export class TaskListComponent {
   listEdit = signal(false);
   movearound = signal(0);
   showSharedList = signal(false);
+  isShareBoxVisible = signal(false);
   shareWithEmail = new FormControl<string>('', [
     Validators.required,
     Validators.email,

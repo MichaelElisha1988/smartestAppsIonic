@@ -133,6 +133,30 @@
     /* Implementation details for arrows... */
   }
 
+  .share-toggle-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .toggle-share-btn {
+    background: transparent;
+    border: 1px solid var(--ion-color-secondary);
+    color: var(--ion-color-secondary);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s all;
+    font-size: 0.9rem;
+    
+    &:hover {
+      background: rgba(0, 240, 255, 0.1);
+      box-shadow: 0 0 10px var(--c-secondary-glow);
+    }
+  }
+
   .share-list {
     &.box {
       border: 1px solid var(--glass-border);
@@ -140,40 +164,45 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 25px;
-      margin: 20px 0;
+      padding: 15px; /* Reduced padding */
+      margin: 10px 0; /* Reduced margin */
       border-radius: 20px;
-      gap: 20px;
+      gap: 12px; /* Reduced gap */
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5); /* Reduced shadow scale slightly */
       transition: 0.3s all;
+      width: 90%; /* Limit width to ensure it's not too wide */
+      max-width: 400px; /* Max width */
+      margin-left: auto;
+      margin-right: auto;
       
       &:hover {
-        box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 240, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(0, 240, 255, 0.1);
         border-color: var(--ion-color-secondary);
       }
     }
 
     input {
       width: 100%;
-      height: 45px;
-      font-size: 1rem;
+      height: 38px; /* Reduced height */
+      font-size: 0.95rem; /* Slightly smaller font */
       color: var(--ion-text-color);
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--glass-border);
-      border-radius: 25px;
-      padding: 0 20px;
+      border-radius: 20px;
+      padding: 0 15px;
       outline: none;
       transition: 0.3s all;
       
       &::placeholder {
         color: var(--c-silver);
+        font-size: 0.9rem;
       }
       
       &:focus {
         border-color: var(--ion-color-secondary);
-        box-shadow: 0 0 15px var(--c-secondary-glow);
+        box-shadow: 0 0 10px var(--c-secondary-glow);
         background: rgba(255, 255, 255, 0.1);
       }
     }
@@ -186,12 +215,12 @@
       transition: 0.3s all cubic-bezier(0.4, 0, 0.2, 1);
       background: transparent;
       width: fit-content;
-      padding: 10px 25px;
+      padding: 8px 20px; /* Reduced padding */
       justify-self: center;
-      border-radius: 25px;
+      border-radius: 20px;
       border: 1px solid var(--ion-color-secondary);
       color: var(--ion-color-secondary);
-      font-size: 1rem;
+      font-size: 0.9rem; /* Smaller font */
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -201,7 +230,7 @@
       &:hover {
         background: var(--ion-color-secondary);
         color: #000;
-        box-shadow: 0 0 20px var(--c-secondary-glow);
+        box-shadow: 0 0 15px var(--c-secondary-glow);
         transform: translateY(-2px);
       }
       
