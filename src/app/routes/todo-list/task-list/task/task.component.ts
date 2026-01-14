@@ -33,7 +33,14 @@ export class TaskComponent implements OnInit {
       this.taskList = listupdatas;
     });
     this.dataSrv.ListIdChg$.subscribe((onChgSelection) => {
-      this.shownList = this.taskList.filter((x) => x.listID == onChgSelection);
+      // Sort: Not Done first, then Done
+      this.shownList = this.taskList
+        .filter((x) => x.listID == onChgSelection)
+        .sort((a, b) => {
+          if (a.didIt === b.didIt) return 0;
+          return a.didIt ? 1 : -1;
+        });
+
       setTimeout(() => {
         document
           .querySelectorAll<HTMLElement>('.effect-section')
@@ -41,8 +48,10 @@ export class TaskComponent implements OnInit {
             const taskObj: TaskModel[] = this.taskList.filter((x) =>
               task.parentElement!.classList.contains(x.id + '')
             );
-            task.style.backgroundColor = '#' + taskObj[0].color;
-            task.style.boxShadow = `0px 0px 35px #${taskObj[0].color}`;
+            if (taskObj.length > 0) {
+              task.style.backgroundColor = '#' + taskObj[0].color;
+              task.style.boxShadow = `0px 0px 35px #${taskObj[0].color}`;
+            }
           });
       });
     });

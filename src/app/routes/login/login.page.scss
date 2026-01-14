@@ -1,145 +1,155 @@
 .home {
   width: 100%;
-  min-height: 70svh;
+  min-height: 100vh;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  margin-top: 8vh;
+  background: radial-gradient(circle at 50% 10%, var(--c-primary-glow), transparent 40%);
 
   .wrap {
     position: relative;
-    width: 80%;
-    height: 60%;
-    background-color: var(--c-grey);
-    color: var(--c-dark-blue);
-
-    box-shadow: 0em 0 1em var(--c-blue);
+    width: 90%;
+    max-width: 400px;
+    padding: 30px 20px;
+    
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border-radius: 24px;
     overflow: hidden;
-    border-radius: 20px;
 
     .title {
       text-align: center;
-      font-size: 36px;
-      font-weight: 600;
-      margin: 30px auto;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 30px;
+      color: var(--ion-color-primary-contrast);
+      text-shadow: 0 0 10px var(--c-primary-glow);
+      letter-spacing: 1px;
     }
+
     .login {
-      position: relative;
       display: flex;
       flex-direction: column;
-      width: 80%;
-      margin: 20px auto;
+      width: 100%;
+      
       .input-wrapper {
         position: relative;
+        margin-bottom: 25px;
+
         label {
-          font-size: 18px;
-          font-weight: 400;
+          font-size: 1rem;
+          color: var(--c-silver);
           position: absolute;
           left: 15px;
-          transition: 0.5s all;
+          top: 14px;
+          transition: 0.3s all;
           pointer-events: none;
-        }
-
-        .l {
-          top: 25px;
+          background: transparent;
         }
 
         input {
-          font-size: 18px;
-          font-weight: 400;
-          margin: 10px 0 20px 0;
-          padding: 10px 15px;
-          border-radius: 30px;
-          color: var(--c-blue);
-          background-color: transparent;
-          border: 3px solid var(--c-blue);
-          width: -webkit-fill-available;
+          font-size: 1rem;
+          width: 100%;
+          padding: 12px 15px;
+          border-radius: 12px;
+          color: var(--ion-text-color);
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          transition: 0.3s all;
+
+          &:focus {
+            outline: none;
+            border-color: var(--ion-color-primary);
+            box-shadow: 0 0 10px var(--c-primary-glow);
+            background: rgba(255, 255, 255, 0.05);
+          }
         }
+        
+        /* Floating label logic assumes .l class is controlled by JS alongside .i */
         .i:focus + .l,
         .i:not(:placeholder-shown) + .l {
-          top: 0px;
-          padding: 1px 5px;
-          background-color: var(--c-grey);
-          font-size: 12px;
-          border-radius: 30px;
+          top: -10px;
+          left: 10px;
+          font-size: 0.8rem;
+          color: var(--ion-color-primary);
+          background: var(--c-surface); /* Opaque bg to hide line if needed, or transparent if label is above */
+          padding: 0 5px;
+          border-radius: 4px;
         }
       }
 
       button {
-        margin: 50px auto 0 auto;
-        padding: 15px 50px;
+        margin-top: 20px;
+        padding: 15px;
         border-radius: 30px;
-        width: fit-content;
-        font-size: 18px;
-        background-color: transparent;
-        border: 3px solid var(--c-blue);
-        color: var(--c-blue);
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 700;
+        
+        background: linear-gradient(90deg, var(--ion-color-primary), var(--ion-color-secondary));
+        border: none;
+        color: #000;
         cursor: pointer;
+        box-shadow: 0 0 15px var(--c-primary-glow);
+        transition: 0.3s transform, 0.3s box-shadow;
 
-        animation: 3s infinite glowing;
+        &:active {
+          transform: scale(0.98);
+        }
+        &:hover {
+          box-shadow: 0 0 25px var(--c-primary-glow);
+        }
+
         &:disabled {
-          border: 3px solid var(--c-silver);
+          background: var(--c-surface);
           color: var(--c-silver);
-          animation: none;
+          box-shadow: none;
+          cursor: not-allowed;
+          border: 1px solid var(--glass-border);
         }
       }
     }
-    .coming-soon {
-      width: 90%;
-      font-size: 16px;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      line-height: normal;
 
-      justify-content: center;
-      align-items: center;
-      margin: 10px auto;
+    .coming-soon {
+      margin-top: 30px;
       text-align: center;
+      
       span {
-        color: rgba(247, 174, 174, 0.57);
-        width: 90%;
-        display: flex;
-        justify-content: center;
-        font-size: 14px;
-        flex-wrap: wrap;
+        color: var(--c-silver);
+        font-size: 0.9rem;
+        display: block;
         margin-bottom: 15px;
       }
       button {
+        background: transparent;
+        border: none;
+        color: var(--ion-color-secondary);
         text-decoration: underline;
+        font-size: 1rem;
         cursor: pointer;
-        border: 0 transparent;
-        font-size: 18px;
-        background-color: transparent;
-        color: var(--c-dark-blue);
-        margin-bottom: 15px;
+        
+        &:hover {
+          text-shadow: 0 0 8px var(--c-secondary-glow);
+        }
       }
     }
   }
 }
+
 .footer {
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 50px;
-  background-color: var(--c-grey);
+  padding: 15px;
+  background: var(--c-surface);
+  border-top: 1px solid var(--glass-border);
   display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-  align-items: center;
+  justify-content: center;
   color: var(--c-silver);
-  font-size: 14px;
-  font-weight: 400;
-  box-shadow: 0em 0 1em var(--c-blue);
-}
-
-@keyframes glowing {
-  from {
-    text-shadow: 0em 0 0em var(--c-blue);
-  }
-  to {
-    text-shadow: 0em 0 5em var(--c-blue);
-  }
+  font-size: 0.8rem;
+  letter-spacing: 1px;
 }

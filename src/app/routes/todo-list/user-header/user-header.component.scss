@@ -2,63 +2,64 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--offgreen);
-  border-bottom: 2px solid var(--green);
-  box-shadow: 1px 1px 3px var(--dark);
-  padding: 0 20px;
-  width: -webkit-fill-available;
+  background-color: var(--c-surface);
+  border-bottom: 1px solid var(--ion-color-secondary);
+  box-shadow: 0 4px 15px var(--c-secondary-glow);
+  padding: 10px 20px;
   position: sticky;
-  top: 15px;
+  top: 0px;
   z-index: 99;
-  margin-top: 35px;
-  margin-bottom: 15px;
+  backdrop-filter: blur(10px);
+
   .user {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
     height: 60px;
-    // .user-pic {
-    //   height: 50%;
-    //   img {
-    //     height: -webkit-fill-available;
-    //     border-radius: 50%;
-    //   }
-    // }
+
     .user-name {
-      font-size: 100%;
-      font-weight: 600;
-      color: var(--dark);
-      text-shadow: 1px 1px 2px var(--dark);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ion-color-primary-contrast);
+      text-shadow: 0 0 5px var(--c-primary-glow);
     }
   }
+
   .app-info {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     font-size: 16px;
-    text-shadow: 1px 1px 25px var(--dark);
+
     .app-logo {
-      font-weight: 600;
-      color: var(--green);
-      text-shadow: 1px 1px 2px var(--dark);
+      font-weight: 800;
+      color: var(--ion-color-secondary);
+      text-shadow: 0 0 8px var(--c-secondary-glow);
+      letter-spacing: 1px;
     }
     .app-name {
-      font-weight: 600;
-      color: var(--yellow);
-      text-shadow: 1px 1px 2px var(--dark);
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--ion-color-secondary), var(--ion-color-primary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
   }
+
   .date-info {
-    font-size: 100%;
+    font-size: 0.9rem;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    align-items: flex-end;
+    gap: 2px;
+    
     .day {
-      font-weight: 600;
-      color: var(--green);
-      text-shadow: 1px 1px 2px var(--dark);
-    }
+      font-weight: 700;
+      color: var(--ion-color-tertiary);
+    } 
     .date {
+      font-weight: 500;
+      color: var(--c-silver);
     }
   }
 }

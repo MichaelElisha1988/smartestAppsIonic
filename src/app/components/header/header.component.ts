@@ -40,4 +40,16 @@ export class HeaderComponent {
     this.isOpenBurger = false;
     this.loginService.logOut();
   }
+
+  toggleWidget() {
+    this.isOpenBurger = false;
+    const tawk = (window as any).Tawk_API;
+    if (tawk) {
+      if (tawk.isChatHidden()) {
+        tawk.showWidget();
+      } else {
+        tawk.hideWidget();
+      }
+    }
+  }
 }

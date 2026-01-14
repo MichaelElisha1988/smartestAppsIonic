@@ -1,146 +1,166 @@
 #container {
   text-align: center;
-
-  min-height: 100svb;
+  min-height: 100vh;
+  /* Add subtle background pattern or gradient if desired */
 }
+
 .main-menu {
   position: sticky;
   bottom: 0;
-  background-color: var(--c-grey);
+  /* Glassmorphism for menu */
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+  
   border-top-right-radius: 30px;
   border-top-left-radius: 30px;
   transition: 0.5s all;
-  border: 15px solid var(--c-grey);
-  box-shadow: inset 0em 0 1em var(--c-dark);
   z-index: 99;
+  padding-bottom: 20px;
+
   .options {
     display: flex;
     justify-content: space-between;
 
     .back {
-      font-size: 12px;
+      font-size: 14px;
       margin: 15px;
-      color: var(--c-blue);
+      color: var(--ion-color-secondary);
       cursor: pointer;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
+
   .wrap-list {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: fit-content;
-
+    
     .list {
       display: flex;
       flex-wrap: wrap;
-      width: 95%;
-      gap: 1rem;
+      width: 100%;
+      gap: 1.5rem;
       justify-content: center;
-      padding-bottom: 15px;
-      padding-top: 15px;
+      padding: 15px;
 
       .action {
-        width: 80px;
-        height: 80px;
-        background-color: var(--c-blue);
-        box-shadow: inset 0em 0 2em var(--c-blue);
-        box-shadow: inset 0em 0 0.5em var(--c-dark);
-        box-shadow: 0em 0 1em var(--c-grey);
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: 600;
+        width: 90px;
+        height: 90px;
+        
+        background: rgba(255, 255, 255, 0.05); /* Glassy button */
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        
         display: flex;
         justify-content: center;
         align-items: center;
+        
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--ion-color-secondary);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: 0.3s all;
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--ion-color-primary-tint);
+          border-color: var(--ion-color-primary);
+          box-shadow: 0 0 15px var(--c-primary-glow);
+          transform: translateY(-2px);
+        }
 
         span {
           pointer-events: none;
+          text-align: center;
         }
       }
     }
   }
 
+  /* Shared styles for settings or measures panels */
   .settings {
-    padding: 16px 30px 50px 30px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    color: var(--c-blue);
-    margin-top: 50px;
-    max-height: 350px;
+    gap: 12px;
+    color: var(--ion-text-color);
+    max-height: 400px;
     overflow-y: auto;
-    overflow-x: hidden;
+
     .action {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
+      
       .span-text {
-        pointer-events: none;
-        text-decoration: underline;
-        font-size: 18px;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ion-color-secondary);
       }
     }
-    .msg-line {
-      text-align: center;
-      padding: 0 30px;
-    }
-
+    
     .measures {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      padding: 3px 0;
-      padding-left: 5px;
-      font-size: 15px;
-      cursor: pointer;
-
+      
       li {
         list-style: none;
-        border: 1px solid var(--c-blue);
+        border: 1px solid var(--ion-color-secondary);
+        color: var(--ion-color-secondary);
+        background: rgba(0, 240, 255, 0.1);
         padding: 10px 15px;
-        border-radius: 13px;
+        border-radius: 12px;
         transition: all 0.3s;
-        span {
-          pointer-events: none;
+        cursor: pointer;
+        font-weight: 600;
+
+        &:hover {
+          background: var(--ion-color-secondary);
+          color: #000;
+          box-shadow: 0 0 10px var(--c-secondary-glow);
         }
+
         &.disabled {
-          color: var(--c-dark);
-          border: 1px solid var(--c-dark);
+          color: var(--c-silver);
+          border-color: var(--c-surface);
+          background: transparent;
+          cursor: default;
         }
       }
     }
   }
-  .exit-sign {
-    text-align: left;
-    color: var(--c-blue);
-    padding: 0 0 15px 0;
-    cursor: pointer;
-  }
-  .exit {
-    text-align: center;
-    margin-top: 20px;
-    color: var(--c-blue);
-    padding: 0 0 15px 0;
-    cursor: pointer;
-  }
-}
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+  .exit-sign, .exit {
+    text-align: center;
+    color: var(--ion-color-tertiary);
+    padding: 15px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.3s text-shadow;
+    
+    &:hover {
+      text-shadow: 0 0 10px var(--ion-color-tertiary);
+    }
+  }
 }
 
 #container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--c-silver);
   margin: 0;
 }
 
 #container a {
   text-decoration: none;
+  color: var(--ion-color-secondary);
 }

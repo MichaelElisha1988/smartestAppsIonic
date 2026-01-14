@@ -3,62 +3,61 @@
   top: 0px;
   z-index: 20;
 
-  background-color: var(--c-grey);
-  color: var(--c-dark-blue);
+  background-color: rgba(11, 12, 16, 0.95);
+  backdrop-filter: blur(10px);
+  color: var(--ion-color-secondary);
 
-  padding: 18px 35px;
-  font-size: 28px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
 
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  box-shadow: 0em 0 0.5em var(--c-blue);
+  border-bottom: 1px solid var(--ion-color-secondary);
+  box-shadow: 0 0 15px var(--c-secondary-glow);
 
   overflow-x: auto;
-  min-height: 60px;
+  min-height: 100px;
 
   .left {
     display: flex;
     justify-content: center;
     align-items: center;
-
     gap: 20px;
 
     .burger {
       display: flex;
       flex-direction: column;
-      gap: 0.225rem;
-      padding: 15px 10px;
+      gap: 6px;
+      padding: 10px;
+      cursor: pointer;
 
       .line {
-        height: 1px;
-        width: 15px;
-        background-color: var(--c-blue);
-        transition: 0.5s all;
+        height: 2px;
+        width: 25px;
+        background-color: var(--ion-color-secondary);
+        transition: 0.3s all ease-in-out;
+        box-shadow: 0 0 5px var(--c-secondary-glow);
       }
       &.open {
-        :nth-last-child(1) {
-          width: 0;
-          position: absolute;
+        .line:nth-child(1) {
+          transform: rotate(45deg) translate(5px, 6px);
         }
-        :nth-last-child(2) {
-          transform: rotate(-45deg);
-          margin-top: -5.6px;
-          height: 2px;
+        .line:nth-child(2) {
+          opacity: 0;
         }
-        :nth-last-child(3) {
-          transform: rotate(45deg);
-          height: 2px;
+        .line:nth-child(3) {
+          transform: rotate(-45deg) translate(5px, -6px);
         }
       }
     }
   }
   .right {
     display: flex;
-    gap: 10px;
-
+    gap: 15px;
     align-items: center;
+
     .logo {
       height: 40px;
       display: flex;
@@ -66,93 +65,100 @@
       align-items: center;
 
       .title {
-        transition: 0.3s color linear, 0.3s text-shadow linear;
+        transition: 0.3s color;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: var(--ion-text-color);
+        
         &.glow {
-          color: #000;
-          text-shadow: 0 0 5px var(--c-blue), 0 0 10px var(--c-blue),
-            0 0 15px var(--c-blue), 0 0 20px var(--c-blue);
+          color: var(--ion-color-secondary);
+          text-shadow: 0 0 10px var(--c-secondary-glow);
         }
       }
       img {
-        height: 40px;
-
-        filter: invert(264%) sepia(215%) saturate(207%) hue-rotate(89deg)
-          saturate(475%) brightness(100%) contrast(304%);
+        height: 32px;
+        /* Removed complex filters, use original or style with css masks if needed. 
+           Assuming SVG or transparent PNG. */
       }
     }
-    .translate {
-      width: 30px;
-      height: 30px;
-      filter: invert(91%) sepia(82%) saturate(2496%) hue-rotate(150deg)
-        brightness(100%) contrast(98%);
+    .translate, .acc {
+      width: 24px;
+      height: 24px;
+      /* Simple coloring for icons if they are masked */
+      background-color: var(--ion-color-secondary); 
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
     }
-    .acc {
-      width: 30px;
-      height: 30px;
-      filter: invert(91%) sepia(82%) saturate(2496%) hue-rotate(150deg)
-        brightness(100%) contrast(98%);
+    /* Fallback if mask fails or strict img usage */
+    img.translate, img.acc {
+       filter: drop-shadow(0 0 2px var(--ion-color-secondary));
     }
   }
 }
 
 .menu-container {
-  width: -webkit-fill-available;
-  color: var(--c-blue);
-  max-width: 560px;
-
-  background-color: var(--c-grey);
-  box-shadow: 0em 0 1em var(--c-blue);
-  transition: 0.5s top;
+  width: 100%;
+  max-width: 400px;
+  color: var(--ion-text-color);
+  
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-x: hidden;
   overflow-y: auto;
 
-  border-right: 15px solid transparent;
-  border-top: 10px solid transparent;
-  border-bottom: 50px solid transparent;
-  border-left: 10px solid transparent;
-
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
-
-  max-height: 300px;
+  border-radius: 20px;
+  
+  max-height: 400px;
   position: fixed;
-  z-index: 19;
+  right: 20px; /* Aligned to right usually */
+  top: 110px; 
+  z-index: 19; /* Increased to be just under header's 20, or visible above content */
 
   .options-list {
-    padding: 16px 30px 50px 30px;
+    padding: 20px;
     .list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
       .list-title {
-        text-decoration: underline;
-        font-size: 18px;
-        margin-bottom: 5px;
-        pointer-events: none;
+        color: var(--ion-color-tertiary);
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
       .list-item {
-        padding: 3px 0;
-        padding-left: 5px;
-        font-size: 15px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background 0.2s;
         cursor: pointer;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--ion-color-secondary);
+        }
       }
     }
   }
-
-  &.open {
-    top: 75px;
-  }
 }
 
+/* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-thumb {
-  background-color: var(--c-blue);
-  border-radius: 15px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background-color: var(--c-dark-blue);
-  border-radius: 15px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ion-color-secondary);
+  border-radius: 3px;
 }

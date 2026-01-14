@@ -47,6 +47,7 @@
       }
       <h2 class="list-title">General</h2>
       <li class="list-item">Add/Remove Measurements</li>
+      <li class="list-item" (click)="toggleWidget()">Show/Hide Widget</li>
       @if(!router.url.includes('policy')) {
       <h2 class="list-title">Policies</h2>
       <li class="list-item" (click)="relocate('policy')">Privacy Policy</li>
