@@ -102,7 +102,6 @@
 
 .menu-container {
   width: 100%;
-  max-width: 400px;
   color: var(--ion-text-color);
   
   background: var(--glass-bg);
@@ -111,19 +110,17 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   
   transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-x: hidden;
-  overflow-y: auto;
 
   border-radius: 20px;
   
-  max-height: 400px;
   position: fixed;
-  right: 20px; /* Aligned to right usually */
-  top: 110px; 
   z-index: 19; /* Increased to be just under header's 20, or visible above content */
 
   .options-list {
+    margin: 20px;
     padding: 20px;
+    max-height: 400px;
+    overflow: auto;
     .list {
       display: flex;
       flex-direction: column;
@@ -152,13 +149,18 @@
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+.menu-container::-webkit-scrollbar {
+  width: 4px; /* Thinner scrollbar */
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+.menu-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05); /* Subtle track */
+  border-radius: 4px;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--ion-color-secondary);
-  border-radius: 3px;
+.menu-container::-webkit-scrollbar-thumb {
+  background: var(--ion-color-tertiary);
+  border-radius: 4px;
+  opacity: 0.8;
+}
+.menu-container::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-tertiary-tint);
 }
