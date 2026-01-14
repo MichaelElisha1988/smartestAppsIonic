@@ -8,6 +8,7 @@
     "start": "ng serve",
     "build": "ng build",
     "buildapk": "ionic capacitor build android",
+    "deploy": "ng build --prod && angular-cli-ghpages -d dist/smartestApps",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"
