@@ -57,7 +57,7 @@
       "measurements": [
         "c-meters",
         "meters",
-        "k-meters",
+        "kilometers",
         "inches",
         "feet",
         "yards"

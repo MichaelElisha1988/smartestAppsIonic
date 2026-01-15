@@ -59,6 +59,7 @@ export const smartestAppsStore = signalStore(
               status: measureStatus.status,
             },
           });
+          store.measureForm().reset();
         })
       )
     ),
