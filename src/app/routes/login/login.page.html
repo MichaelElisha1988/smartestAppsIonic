@@ -1,9 +1,9 @@
-<ion-content [fullscreen]="true">
-  <div id="container">
+<ion-content [fullscreen]="true" [scrollY]="false">
+  <div id="container" style="height: 100%">
     <section class="home">
       <div class="wrap">
         <div class="title">
-          <h1>{{ isRegister ? "Register" : "Login" }}</h1>
+          <h1>{{ isReset ? "Reset Password" : (isRegister ? "Register" : "Login") }}</h1>
         </div>
         <form
           class="login"
@@ -22,7 +22,7 @@
             <label class="l" for="usenName">Email :</label>
           </div>
 
-          <div class="input-wrapper">
+          <div class="input-wrapper" *ngIf="!isReset">
             <input
               class="i"
               id="password"
@@ -34,36 +34,38 @@
             />
             <label class="l" for="password">Password: </label>
           </div>
-          <div class="input-wrapper">
-            @if(isRegister){
-            <input
+          <div class="input-wrapper" *ngIf="isRegister && !isReset">
+             <input
               class="i"
-              [ngClass]="isRegister ? 'seeThePass' : ''"
-              id="password"
+              id="passwordConfirm"
               type="password"
               formControlName="passwordConfirm"
+              [ngClass]="isRegister ? 'seeThePass' : ''"
               placeholder=" "
               autocomplete="current-password"
             />
-            }
-            <label class="l" *ngIf="isRegister" for="password"
-              >Confirm Password:
-            </label>
+            <label class="l" for="passwordConfirm">Confirm Password:</label>
           </div>
-          <button type="submit" [disabled]="loginForm.status == 'INVALID'">
-            {{ isRegister ? "Register" : "Login" }}
+          
+          <div class="forgot-pass" *ngIf="!isRegister && !isReset">
+             <span (click)="toggleReset()">Forgot Password?</span>
+          </div>
+
+          <button type="submit" [disabled]="loginForm.status == 'INVALID' && !isReset">
+            {{ isReset ? "Send Reset Link" : (isRegister ? "Register" : "Login") }}
           </button>
         </form>
 
         <div class="coming-soon">
           <span>{{ this.dataStore.loginError() }}</span>
-          <button (click)="register()">
-            {{ isRegister ? "Click here to Log-in" : "Click here to Register" }}
+          
+          <button (click)="isReset ? toggleReset() : register()">
+            {{ isReset ? "Back to Login" : (isRegister ? "Click here to Log-in" : "Click here to Register") }}
           </button>
         </div>
       </div>
       <div class="footer">
-        <span>© 2023 smartestApps</span>
+        <span>© 2023 SmartestAppes</span>
         <span>All rights reserved</span>
       </div>
     </section>

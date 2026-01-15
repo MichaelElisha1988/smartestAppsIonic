@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { environment } from 'src/environments/environment';
@@ -92,5 +93,10 @@ export class LoginService {
     localStorage.removeItem('login');
     signOut(auth);
     location.reload();
+  }
+
+  resetPassword(email: string) {
+    const auth = getAuth();
+    return sendPasswordResetEmail(auth, email);
   }
 }
