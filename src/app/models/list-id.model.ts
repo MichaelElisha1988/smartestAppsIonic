@@ -6,6 +6,6 @@ export interface ListId {
   editMode: boolean;
   showSharedList: boolean;
   isShared: boolean;
-  sharedWith: string;
+  sharedWith: any;
   sharedBy: string;
 }

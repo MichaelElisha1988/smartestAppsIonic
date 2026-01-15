@@ -59,10 +59,7 @@ export class MainFooterComponent implements OnInit {
 
   async refreshList() {
     this.smartestAppsStore.showLoader(true);
-    await Promise.all([
-        this.dataSrv.getTaskList(),
-        this.dataSrv.getListId()
-    ]);
+    await this.dataSrv.initData();
     setTimeout(() => {
       this.smartestAppsStore.showLoader(false);
     }, 1000);
