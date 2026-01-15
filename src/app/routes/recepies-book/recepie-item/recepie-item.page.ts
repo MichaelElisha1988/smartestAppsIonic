@@ -51,8 +51,8 @@ export class RecepieItemPage implements OnInit {
       : this.dataSrv.updateFavoriteMeal(this.recipie!.strMeal);
     if (shoppingListId) {
       this.dataSrv.setSelectedListId(shoppingListId!.id);
-      this.createTaskModel(ingInfo, addIng)
-        ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
+      this.createTaskModel(ingInfo, addIng, shoppingListId!.id)
+        ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng, shoppingListId!.id)!)
         : '';
     } else {
       this.dataSrv.updateListId('shopping list');
@@ -64,17 +64,17 @@ export class RecepieItemPage implements OnInit {
       });
       if(shoppingListId) {
           this.dataSrv.setSelectedListId(shoppingListId!.id);
-          this.createTaskModel(ingInfo, addIng)
-            ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
+          this.createTaskModel(ingInfo, addIng, shoppingListId!.id)
+            ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng, shoppingListId!.id)!)
             : '';
       }
     }
   }
 
-  createTaskModel(ingInfo: string, addIng: string): TaskModel | null {
+  createTaskModel(ingInfo: string, addIng: string, targetListId: number): TaskModel | null {
     if (ingInfo && addIng) {
       let task = this.dataSrv.taskList().find((x) => {
-        return x.task.toLowerCase() == addIng.toLowerCase();
+        return x.task.toLowerCase() == addIng.toLowerCase() && x.listID == targetListId;
       });
       if (task) {
         task.taskinfo =
@@ -82,9 +82,11 @@ export class RecepieItemPage implements OnInit {
         this.dataSrv.updateTaskData(task);
         return null;
       } else {
-        return {
-          listID: 0,
-          id: 0,
+        const currentList = this.dataSrv.listId().find(l => l.id === targetListId);
+        
+        const newTask: TaskModel = {
+          listID: targetListId,
+          id: new Date().valueOf(),
           task: addIng ? addIng : '',
           taskinfo: this.recipie!.strMeal + ' - ' + ingInfo,
           author: this.loginName,
@@ -97,6 +99,14 @@ export class RecepieItemPage implements OnInit {
           isCheckBox: true,
           didIt: false,
         };
+
+        if(currentList?.isShared) {
+            newTask.isShared = true;
+            newTask.sharedBy = currentList.sharedBy;
+            newTask.ownerListName = currentList.name;
+        }
+
+        return newTask;
       }
     }
     {

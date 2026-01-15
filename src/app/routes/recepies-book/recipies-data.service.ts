@@ -27,6 +27,12 @@ export class RecipiesDataService {
     );
   }
 
+  getSujestionsImages(image: string): Observable<any> {
+    return this.http.get<any>(
+      `https://www.googleapis.com/customsearch/v1?q=${image}&searchType=image&key=AIzaSyAl7BROPcHGHDZGPAMyqelhCg9hws3vMlA&cx=668dbb9f47ea04424`
+    );
+  }
+
   getSearchedByFirstLetter(letter: string): Observable<MealModel> {
     return this.http.get<MealModel>(
       `https://www.themealdb.com/api/json/v1/1/${this.searchByFirstLetter}${letter}`

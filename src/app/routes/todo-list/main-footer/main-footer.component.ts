@@ -66,9 +66,14 @@ export class MainFooterComponent implements OnInit {
   }
 
   createTaskModel(): TaskModel {
-    return {
-      listID: 0,
-      id: 0,
+    const selectedId = this.dataSrv.selectedId();
+    const currentList = this.dataSrv.listId().find((l) => l.id === selectedId);
+    console.log('MainFooter: Creating Task. SelectedId:', selectedId);
+    console.log('MainFooter: Current List Found:', currentList);
+
+    const newTask: TaskModel = {
+      listID: selectedId,
+      id: new Date().valueOf(),
       task: this.taskform.controls.title.value!,
       author: this.dataSrv.getLoginName(),
       date: this.dataSrv.getDateString(),
@@ -80,5 +85,16 @@ export class MainFooterComponent implements OnInit {
       isCheckBox: true,
       didIt: false,
     };
+
+    if (currentList?.isShared) {
+      console.log('MainFooter: List IS Shared. Owner:', currentList.sharedBy, 'Name:', currentList.name);
+      newTask.isShared = true;
+      newTask.sharedBy = currentList.sharedBy;
+      newTask.ownerListName = currentList.name;
+    } else {
+      console.log('MainFooter: List is NOT Shared (or not found).');
+    }
+
+    return newTask;
   }
 }

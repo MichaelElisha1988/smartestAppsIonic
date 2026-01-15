@@ -10,6 +10,7 @@ import {
   doc,
   getDocs,
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { LoginService } from './login.service';
@@ -17,7 +18,6 @@ import shajs from 'sha.js';
 import { ListId } from '../models/list-id.model';
 import { SharingEmail, SharedEmail } from '../models/shared-email.model';
 import { smartestAppsStore } from './data-store.service';
-
 import { Meal } from '../models/meal.model';
 
 @Injectable({
@@ -30,15 +30,16 @@ export class DataService {
   sharedEmails = signal<SharedEmail>({ nameSharedLists: [] });
   selectedId = signal<number>(0);
   favoriteMealList = signal<any[]>([]);
+  refreshTrigger = signal<number>(0);
 
-  fbDataBase: FirebaseApp;
-  DataBaseApp: any;
-  listIdRef: CollectionReference;
+  fbDataBase!: FirebaseApp;
+  DataBaseApp!: any;
+  listIdRef!: CollectionReference;
   sharedListIdRef: CollectionReference | null = null;
-  taskListRef: CollectionReference;
+  taskListRef!: CollectionReference;
   sharedTaskListRef: CollectionReference | null = null;
-  favoriteMealRef: CollectionReference;
-  sharingWithEmailsRef: CollectionReference;
+  favoriteMealRef!: CollectionReference;
+  sharingWithEmailsRef!: CollectionReference;
   sharedEmailsRef: CollectionReference | null = null;
   loginName: string = '';
   todayDate: string = '';
@@ -48,31 +49,8 @@ export class DataService {
   router = inject(Router);
 
   constructor() {
-    localStorage.getItem('login') ? '' : this.router.navigate(['']);
-    // FIREBASE INITIALIZER
-    this.fbDataBase = this.loginSrv.getfbDataBase();
-    this.DataBaseApp = this.loginSrv.getDataBaseApp();
-    /////////////////////////////////
-    // CALLING DATABASE
-    this.listIdRef = collection(
-      this.DataBaseApp,
-      `listId${JSON.parse(localStorage.getItem('login')!).uid}`
-    );
-    this.taskListRef = collection(
-      this.DataBaseApp,
-      `taskList${JSON.parse(localStorage.getItem('login')!).uid}`
-    );
-    this.sharingWithEmailsRef = collection(
-      this.DataBaseApp,
-      `sharingEmails${JSON.parse(localStorage.getItem('login')!).uid}`
-    );
-
-    this.favoriteMealRef = collection(
-      this.DataBaseApp,
-      `favoriteMealRef${JSON.parse(localStorage.getItem('login')!).uid}`
-    );
-    /////////////////////////////////////
-
+    this.initRefs();
+    
     // GET FIRST DATA FIREBASE/SESSION
     this.initData();
 
@@ -82,7 +60,39 @@ export class DataService {
     });
   }
 
+  initRefs() {
+     if (this.taskListRef) return; // Already initialized
+
+     const loginData = localStorage.getItem('login');
+     if (!loginData) return;
+     
+     this.fbDataBase = this.loginSrv.getfbDataBase();
+     this.DataBaseApp = this.loginSrv.getDataBaseApp();
+     const uid = JSON.parse(loginData).uid;
+
+     this.listIdRef = collection(
+      this.DataBaseApp,
+      `listId${uid}`
+     );
+     this.taskListRef = collection(
+      this.DataBaseApp,
+      `taskList${uid}`
+     );
+     this.sharingWithEmailsRef = collection(
+      this.DataBaseApp,
+      `sharingEmails${uid}`
+     );
+
+     this.favoriteMealRef = collection(
+      this.DataBaseApp,
+      `favoriteMealRef${uid}`
+     );
+  }
+
   async initData() {
+    this.initRefs();
+    this.refreshTrigger.update(v => v + 1);
+    
     // 1. Fetch emails FIRST to know about shared lists
     await Promise.all([this.getSharingEmails(), this.getSharedEmails()]);
 
@@ -102,6 +112,9 @@ export class DataService {
   }
 
   async getListId() {
+    this.initRefs();
+    if (!this.listIdRef) return;
+
     let tmpListId: ListId[] = [];
 
     await getDocs(this.listIdRef!).then((data) => {
@@ -203,6 +216,8 @@ export class DataService {
   }
 
   async getFavoriteMealList() {
+    this.initRefs();
+    if (!this.favoriteMealRef) return;
     let tmpFavoriteMealList: any[] = [];
 
     await getDocs(this.favoriteMealRef!).then((data) => {
@@ -219,6 +234,8 @@ export class DataService {
   }
 
   async getTaskList() {
+    this.initRefs();
+    if (!this.taskListRef) return;
     let tmpTaskList: TaskModel[] = [];
 
     await getDocs(this.taskListRef!).then((data) => {
@@ -245,7 +262,12 @@ export class DataService {
                  return getDocs(oldRef).then(oldData => {
                      oldData.docs.forEach((d) => {
                         if(!tmpTaskList.find(x => x.id === (d.data() as TaskModel).id)){
-                            tmpTaskList.push({ ...(d.data() as TaskModel), dbId: d.id });
+                            // SELF-HEALING: Force isShared metadata for legacy tasks
+                            const t = d.data() as TaskModel;
+                            t.isShared = true;
+                            t.sharedBy = myEmail;
+                            t.ownerListName = nameList;
+                            tmpTaskList.push({ ...t, dbId: d.id });
                         }
                      });
                  });
@@ -253,8 +275,13 @@ export class DataService {
 
             data.docs.forEach((data) => {
                if(!tmpTaskList.find(x => x.id === (data.data() as TaskModel).id)){
+                  // SELF-HEALING: Force isShared metadata for legacy tasks
+                  const t = data.data() as TaskModel;
+                  t.isShared = true;
+                  t.sharedBy = myEmail;
+                  t.ownerListName = nameList;
                   tmpTaskList.push({
-                    ...(data.data() as TaskModel),
+                    ...t,
                     dbId: data.id,
                   });
                }
@@ -289,8 +316,13 @@ export class DataService {
         return getDocs(this.sharedTaskListRef!).then((data) => {
           data.docs.forEach((data) => {
              if(!tmpTaskList.find(x => x.id === (data.data() as TaskModel).id)){
+                // SELF-HEALING: Force isShared metadata for legacy tasks
+                const t = data.data() as TaskModel;
+                t.isShared = true;
+                t.sharedBy = ownerEmail;
+                t.ownerListName = listName;
                 tmpTaskList.push({
-                  ...(data.data() as TaskModel),
+                  ...t,
                   dbId: data.id,
                 });
              }
@@ -303,7 +335,11 @@ export class DataService {
     this.taskList.set(tmpTaskList);
   }
 
+
+
   async getSharingEmails() {
+    this.initRefs();
+    if(!this.sharingWithEmailsRef) return;
     let tmpSharingEmails: SharingEmail[] = [];
 
     await getDocs(this.sharingWithEmailsRef!).then((data) => {
@@ -319,6 +355,8 @@ export class DataService {
   }
 
   async getSharedEmails() {
+    this.initRefs();
+    if(!this.DataBaseApp) return;
     let tmpSharedEmails: SharedEmail | undefined;
 
     this.sharedEmailsRef = collection(
@@ -365,7 +403,10 @@ export class DataService {
     this.selectedId.set(id);
   }
 
-  updateListId(name: string) {
+  async updateListId(name: string) {
+    this.initRefs();
+    if (!this.listIdRef) return;
+
     const listItem: ListId = {
       id: new Date().valueOf() * 2,
       name: name,
@@ -378,18 +419,18 @@ export class DataService {
         ? JSON.parse(localStorage.getItem('login')!).email
         : '',
     };
-    addDoc(this.listIdRef!, listItem);
+    await addDoc(this.listIdRef!, listItem);
     this.listId.update(prev => [...prev, listItem]);
     localStorage.setItem(
       `listId${JSON.parse(localStorage.getItem('login')!).uid}`,
       JSON.stringify(this.listId())
     );
-    this.getListId();
+    await this.getListId();
   }
 
-  // ... (existing code)
-
-  updateFavoriteMeal(mealOrName: string | Meal) {
+  async updateFavoriteMeal(mealOrName: string | Meal) {
+    this.initRefs();
+    if (!this.favoriteMealRef) return;
     let mealToSave: any;
 
     if (typeof mealOrName === 'string') {
@@ -408,25 +449,21 @@ export class DataService {
         };
     }
 
-    addDoc(this.favoriteMealRef!, mealToSave);
+    await addDoc(this.favoriteMealRef!, mealToSave);
     
     // Update Local State Optimistically
     const currentList = this.favoriteMealList();
-    // For local update, we match the structure we just saved
-    // Note: The UI expects objects with 'name' property for API calls? 
-    // The UI loop in RecepiesBookPage uses `apiFavorites[i].name`.
-    // My new custom object has `strMeal` but not `name`. 
-    // I should add `name` to custom object as alias for compatibility?
     if (typeof mealOrName !== 'string') {
         mealToSave.name = mealOrName.strMeal; 
     }
 
     this.dataStore.setFavoriteMealList([...currentList, mealToSave]);
-    // Also trigger refetch to be sure
-    this.getFavoriteMealList();
+    await this.getFavoriteMealList();
   }
 
-  deleteFavoriteMeal(mealName: string) {
+  async deleteFavoriteMeal(mealName: string) {
+    this.initRefs();
+    if (!this.favoriteMealRef) return;
     // We try to find by 'name' or 'strMeal'
     let dbId = this.dataStore
       .favoriteMealList()
@@ -441,7 +478,13 @@ export class DataService {
       `favoriteMealRef${JSON.parse(localStorage.getItem('login')!).uid}`,
       dbId
     );
-    deleteDoc(docRef);
+    
+    try {
+        await deleteDoc(docRef);
+        console.log('DeleteFavoriteMeal: Success', mealName);
+    } catch (err) {
+        console.error('DeleteFavoriteMeal: Failed', err);
+    }
     
     // Updates
     const newList = this.favoriteMealList().filter(m => m.dbId !== dbId);
@@ -449,7 +492,10 @@ export class DataService {
     this.dataStore.setFavoriteMealList(newList);
   }
 
-  deleteList(id: number, taskIds: TaskModel[]) {
+  async deleteList(id: number, taskIds: TaskModel[]) {
+    this.initRefs();
+    if (!this.listIdRef) return;
+
     taskIds.forEach((x) => this.deleteTask(x.id));
 
     const tmpListIdItem = this.listId().find((item) => item.id == id);
@@ -488,13 +534,9 @@ export class DataService {
                   return sharedLists != tmpListIdItem!.name;
                 });
                 
-                // If it's empty, delete the doc, otherwise update
               if(tmpOldAllowedEmails.nameSharedLists.length == 0) {
                    deleteDoc(docSharingRef);
               } else {
-                  // Important: preserve other fields, clean up just the name list
-                  // Actually `tmpOldAllowedEmails` is a local object modified above.
-                  // We just need to update it.
                    updateDoc(docSharingRef, { nameSharedLists: tmpOldAllowedEmails.nameSharedLists });
               }
             }
@@ -520,29 +562,30 @@ export class DataService {
     }
   }
 
-  createSharedList(listId: number, sheredWithEmails: string[]) {
+  async createSharedList(listId: number, sheredWithEmails: string[]) {
+    this.initRefs();
+    if (!this.listIdRef) return;
+
     const shareListItem = this.listId().find((x) => x.id == listId);
     const allListTasks = this.taskList().filter((x) => {
       return x.listID == listId;
     });
-    // Deep copy tasks to avoid mutating original immediately if needed, though they are being re-added
+    // Deep copy tasks to avoid mutating original immediately if needed
     let tmpTasktoSharedList = this.taskList().filter((x) => {
       return x.listID == listId;
     });
 
     // Delete Original List locally and from DB
-    this.deleteList(this.selectedId(), allListTasks);
+    await this.deleteList(this.selectedId(), allListTasks);
 
     // Update LOCAL list item properties for the new shared state
     if (shareListItem) {
       shareListItem.showSharedList = false;
       shareListItem.isShared = true;
       shareListItem.sharedWith = sheredWithEmails; // Now an array
-      // sharedBy remains the current user (owner)
     }
 
     // 1. GENERATE SHARED COLLECTION KEYS based on OWNER (Me) + LIST NAME
-    // This allows multiple people to access the SAME collection.
     const ownerEmail = JSON.parse(localStorage.getItem('login')!).email;
     const listHash = shajs('sha256')
       .update(`${ownerEmail}${shareListItem!.name}`)
@@ -559,13 +602,13 @@ export class DataService {
     );
 
     // 2. POPULATE THE SHARED COLLECTIONS
-    addDoc(this.sharedListIdRef!, shareListItem);
-    tmpTasktoSharedList.forEach((task) => {
-      addDoc(this.sharedTaskListRef!, task);
+    await addDoc(this.sharedListIdRef!, shareListItem);
+    tmpTasktoSharedList.forEach(async (task) => {
+      await addDoc(this.sharedTaskListRef!, task);
     });
 
     // 3. GRANT ACCESS TO EACH RECIPIENT
-    sheredWithEmails.forEach((targetEmail) => {
+    const promises = sheredWithEmails.map(async (targetEmail) => {
       // A. Update "SharingEmails" (My record of who I shared with)
       let tmpAllowedEmails: SharingEmail;
       let tmpOldAllowedEmails: SharingEmail | undefined | null =
@@ -580,15 +623,10 @@ export class DataService {
             `sharingEmails${JSON.parse(localStorage.getItem('login')!).uid}`,
             dbIdSharingEmail
           );
-          // Push new list name if not exists (check duplicates?)
           if (!tmpOldAllowedEmails.nameSharedLists.includes(shareListItem!.name)) {
              tmpOldAllowedEmails.nameSharedLists.push(shareListItem!.name);
-             // We can just push the name because I AM THE OWNER.
-             // When I verify what I shared, I know I own it.
-             // When THEY verify, they look at "SharedEmails" collection which needs OWNER info.
           }
-          
-          updateDoc(docSharingRef, { ...tmpOldAllowedEmails });
+          await updateDoc(docSharingRef, { ...tmpOldAllowedEmails });
         }
       } else {
         // New recipient, create record
@@ -596,7 +634,7 @@ export class DataService {
           allowedEmail: targetEmail,
           nameSharedLists: [shareListItem!.name],
         };
-        addDoc(this.sharingWithEmailsRef!, tmpAllowedEmails);
+        await addDoc(this.sharingWithEmailsRef!, tmpAllowedEmails);
       }
 
       // B. Update "SharedEmails" (The RECIPIENT'S inbox of shared lists)
@@ -605,159 +643,176 @@ export class DataService {
         `sharedEmails${shajs('sha256').update(`${targetEmail}`).digest('hex')}`
       );
 
-      // We need to check if the recipient already has a 'SharedEmails' doc
-      // Since we can't easily query their specific doc without ID, we rely on having fetching it if possible, 
-      // BUT we can't fetch THEIR data easily without a query.
-      // Wait, the original code did `getDocs` on `sharedEmailsRef` but that was for MY shared emails.
-      // To update THEIRS, we effectively blindly `addDoc` or we need a way to know their ID?
-      // The original code did: `addDoc(this.sharedEmailsRef!, newSharedEmails)` where sharedEmailsRef was targetEmail hashed.
-      // If we blindly addDoc, they might get duplicates. 
-      // IMPROVEMENT: Query their collection to see if a doc exists?
-      // For now, to match original logic style (which seemed to assume 1 doc or add new):
-      // Actually original logic checked `if (this.sharingEmails().find...)` -> that checks MY list.
-      // It did NOT check the recipient's DB state properly? 
-      // Original: 
-      /*
-         this.sharedEmailsRef = collection(..., targetEmail hash);
-         if (this.sharingEmails().find... targetEmail ...) { 
-            // This logic implies: If I have shared with them before, I assume they have a doc?
-            // But I don't know the ID of THEIR doc in THEIR collection unless I stored it?
-            // The original code tried to access `this.sharedEmails()?.dbId` which is WRONG (that's MY shared lists).
-         }
-      */
-      // CORRECT LOGIC: Query the recipient's `sharedEmails` collection to find the single config doc (if exists).
-      // Since we can't easily wait/query inside this loop for everything without slowing down, 
-      // AND existing logic was a bit flawsy, we will try to just ADD access.
-      // Better approach used by Firestore typically: Each user has a `sharedWithMe` collection. We add a doc per list.
-      // Current structure: `sharedEmails` collection has ONE doc with an array `nameSharedLists`.
-      
-      // We will perform a `getDocs` on the Recipient's collection to find the main doc.
-      getDocs(recipientSharedEmailsRef).then(snapshot => {
-          if (!snapshot.empty) {
+      const snapshot = await getDocs(recipientSharedEmailsRef);
+      if (!snapshot.empty) {
              // Update existing doc
              const docId = snapshot.docs[0].id;
              const existingData = snapshot.docs[0].data() as SharedEmail;
-             const newEntry = { name: shareListItem!.name, owner: ownerEmail }; // NEW DATA STRUCTURE
+             const newEntry = { name: shareListItem!.name, owner: ownerEmail }; 
              
              // Check duplicates
              const exists = existingData.nameSharedLists.find((x: any) => 
                  (typeof x === 'string' ? x : x.name) === shareListItem!.name && 
-                 (typeof x === 'string' ? true : x.owner === ownerEmail) // Legacy string check
+                 (typeof x === 'string' ? true : x.owner === ownerEmail) 
              );
 
              if(!exists) {
                  existingData.nameSharedLists.push(newEntry);
                  const docRef = doc(this.DataBaseApp, `sharedEmails${shajs('sha256').update(`${targetEmail}`).digest('hex')}`, docId);
-                 updateDoc(docRef, { nameSharedLists: existingData.nameSharedLists });
+                 await updateDoc(docRef, { nameSharedLists: existingData.nameSharedLists });
              }
-          } else {
+      } else {
              // Create new doc
              const newEntry = { name: shareListItem!.name, owner: ownerEmail };
-             addDoc(recipientSharedEmailsRef, { nameSharedLists: [newEntry] });
-          }
-      });
+             await addDoc(recipientSharedEmailsRef, { nameSharedLists: [newEntry] });
+      }
     });
 
+    await Promise.all(promises);
+
     // 4. REFRESH LOCAL STATE
-    this.getSharingEmails();
-    this.getSharedEmails(); // My shared lists
-    this.getListId();
-    this.getTaskList(); 
+    await this.getSharingEmails();
+    await this.getSharedEmails(); 
+    await this.getListId();
+    await this.getTaskList(); 
   }
 
-  deleteTask(id: number) {
-    const dbId = this.taskList().find((task) => task.id == id)?.dbId;
-    if (!dbId) return;
+  async deleteTask(id: number) {
+    this.initRefs();
+    if (!this.taskListRef) return; 
 
-    if (!this.taskList().find((x) => x.id == id)!.isShared) {
-      const docRef = doc(
-        this.DataBaseApp,
-        `taskList${JSON.parse(localStorage.getItem('login')!).uid}`,
-        dbId
-      );
-      deleteDoc(docRef);
-    } else {
-      const collectionKey = shajs('sha256')
-        .update(
-          `${this.taskList().find((x) => x.id == id)!.sharedBy}${
-            this.taskList().find((x) => x.id == id)!.ownerListName
-          }`
-        )
-        .digest('hex');
-
-      const docRef = doc(
-        this.DataBaseApp,
-        `sharedTaskList${collectionKey}`,
-        dbId
-      );
-      deleteDoc(docRef);
+    const task = this.taskList().find((task) => task.id == id);
+    if (!task) {
+        console.error('DeleteTask: Task not found in list', id);
+        return; 
     }
+    if (!task.dbId) {
+        console.error('DeleteTask: Task missing dbId', task);
+        return;
+    }
+
+    console.log('DeleteTask: Deleting task', id, 'Shared:', task.isShared);
+
+    try {
+        if (!task.isShared) {
+            const docRef = doc(
+                this.DataBaseApp,
+                `taskList${JSON.parse(localStorage.getItem('login')!).uid}`,
+                task.dbId
+            );
+            await deleteDoc(docRef);
+            console.log('DeleteTask: Deleted private task');
+        } else {
+            const collectionKey = shajs('sha256')
+                .update(
+                `${task.sharedBy}${task.ownerListName}`
+                )
+                .digest('hex');
+
+            const docRef = doc(
+                this.DataBaseApp,
+                `sharedTaskList${collectionKey}`,
+                task.dbId
+            );
+            await deleteDoc(docRef);
+            console.log('DeleteTask: Deleted shared task from key:', collectionKey);
+        }
+    } catch (err) {
+        console.error('DeleteTask: Failed to delete doc', err);
+    }
+    
     this.taskList.update(prev => prev.filter((x) => x.id != id));
   }
 
-  updateTaskData(task: TaskModel) {
-    let taskToSave = { ...task };
-    if (!task.isShared) {
-      if (task.dbId) {
-        const docRef = doc(
-          this.DataBaseApp,
-          `taskList${JSON.parse(localStorage.getItem('login')!).uid}`,
-          task.dbId
-        );
-        updateDoc(docRef, { ...taskToSave });
-      } else {
-        addDoc(this.taskListRef!, taskToSave);
-      }
-    } else {
-      const collectionKey = shajs('sha256')
-        .update(`${task.sharedBy}${task.ownerListName}`)
-        .digest('hex');
-      this.sharedTaskListRef = collection(
-        this.DataBaseApp,
-        `sharedTaskList${collectionKey}`
-      );
+  async updateTaskData(task: TaskModel) {
+    // Sanitization: Remove undefined fields
+    let taskToSave = JSON.parse(JSON.stringify(task));
 
-      if (task.dbId) {
-        const docRef = doc(
-          this.DataBaseApp,
-          `sharedTaskList${collectionKey}`,
-          task.dbId
-        );
-        updateDoc(docRef, { ...taskToSave });
-      } else {
-        addDoc(this.sharedTaskListRef!, taskToSave);
-      }
+    this.initRefs();
+    if (!this.taskListRef) {
+        console.error('Cannot update task: Database not initialized');
+        return;
     }
-    // Optimistic update
-    this.getTaskList();
+    console.log('DataService: updateTaskData called.');
+    console.log('DataService: Task isShared:', task.isShared);
+    console.log('DataService: SharedBy:', task.sharedBy, 'OwnerList:', task.ownerListName);
+
+
+    // OPTIMISTIC UPDATE: Update local UI immediately
+    this.taskList.update(list => {
+        const index = list.findIndex(t => t.id === task.id);
+        if (index > -1) {
+            // Update existing
+            const newList = [...list];
+            newList[index] = task;
+            return newList;
+        } else {
+             // It's a new task being created, add it temporarily? 
+             // MainFooter might normally handle UI, but here we enforce it.
+             return [...list, task];
+        }
+    });
+
+    try {
+        if (!task.isShared) {
+          if (task.dbId) {
+            const docRef = doc(
+              this.DataBaseApp,
+              `taskList${JSON.parse(localStorage.getItem('login')!).uid}`,
+              task.dbId
+            );
+            await updateDoc(docRef, { ...taskToSave });
+          } else {
+            await addDoc(this.taskListRef!, taskToSave);
+            // New task: We need to pull back data to get the dbId
+            this.getTaskList(); 
+          }
+        } else {
+          const collectionKey = shajs('sha256')
+            .update(`${task.sharedBy}${task.ownerListName}`)
+            .digest('hex');
+          this.sharedTaskListRef = collection(
+            this.DataBaseApp,
+            `sharedTaskList${collectionKey}`
+          );
+
+          if (task.dbId) {
+            const docRef = doc(
+              this.DataBaseApp,
+              `sharedTaskList${collectionKey}`,
+              task.dbId
+            );
+            await updateDoc(docRef, { ...taskToSave });
+          } else {
+            await addDoc(this.sharedTaskListRef!, taskToSave);
+            // New task: We need to pull back data to get the dbId
+            this.getTaskList();
+          }
+        }
+    } catch (err: any) {
+        console.error('Firestore Update Failed:', err);
+        // Rollback? For now, we assume success.
+    }
   }
 
   // Method to update List Item (Rename, etc.)
-  updateListData(list: ListId) {
-      if (list.dbId) {
-          if(!list.isShared) {
-              const docRef = doc(
-                this.DataBaseApp,
-                `listId${JSON.parse(localStorage.getItem('login')!).uid}`,
-                list.dbId
-              );
-              updateDoc(docRef, { ...list });
-          } else {
-              // Update Shared List Name? 
-              // Shared logic usually requires hashing owner+name, but if name changes, key changes?
-              // For now, assuming direct update of properties like 'editMode' or 'name' if allowed.
-              // Note: Changing name of a shared list breaks the hash key if hash depends on name relative to owner.
-              // Logic for Shared lists rename is complex. 
-              // Assuming simplified update for now.
-              // Actually, listIdRef is for MY lists. sharedListIdRef is for shared.
-              // If isShared is true, we need to find it in shared collection.
-               const collectionKey = shajs('sha256')
-                .update(`${list.sharedBy}${list.name}`) // Warning: If name changed, this might fail to find OLD doc?
-                .digest('hex');
-               // This logic is risky for renames. 
-          }
+  async updateListData(list: ListId) {
+    this.initRefs();
+    if (list.dbId) {
+      if (!list.isShared) {
+        const docRef = doc(
+          this.DataBaseApp,
+          `listId${JSON.parse(localStorage.getItem('login')!).uid}`,
+          list.dbId
+        );
+        await updateDoc(docRef, { ...list });
+      } else {
+        const collectionKey = shajs('sha256')
+          .update(`${list.sharedBy}${list.name}`)
+          .digest('hex');
       }
-      this.getListId();
+    }
+    await this.getListId();
   }
 
   // Alias for legacy calls or specific logic
