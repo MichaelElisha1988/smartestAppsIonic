@@ -31,7 +31,6 @@ export class TaskListComponent {
   isShareBoxVisible = signal(false);
   shareWithEmail = new FormControl<string>('', [
     Validators.required,
-    Validators.email,
   ]);
 
   @ViewChild('addInput') addInput: ElementRef | undefined;
@@ -159,14 +158,24 @@ export class TaskListComponent {
     ) {
       let listId = this.getSelectedListId();
       this.showSharedList.set(false);
-      console.log(this.shareWithEmail.value!.toLocaleLowerCase());
-      this.dataSrv.createSharedList(
-        listId,
-        this.shareWithEmail.value!.toLocaleLowerCase()
-      );
-      this.shareWithEmail.setValue('');
+      
+      const emailInput = this.shareWithEmail.value || '';
+      // Split by comma, trim whitespace, and filter empty strings
+      const emails = emailInput.split(',').map(e => e.trim().toLowerCase()).filter(e => e.length > 0);
+      
+      console.log('Sharing with emails:', emails);
+      if (emails.length > 0) {
+          this.dataSrv.createSharedList(
+            listId,
+            emails
+          );
+          this.shareWithEmail.setValue('');
+      } else {
+          alert('Please enter at least one valid email');
+      }
+
     } else {
-      alert('Cannot share with this email');
+      alert('Cannot share with these emails');
     }
   }
   fordev() {
