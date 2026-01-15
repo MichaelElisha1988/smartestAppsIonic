@@ -1,5 +1,45 @@
 <ion-content [fullscreen]="true">
   <section class="recepies">
+    <div class="add-recipe-section">
+        <button class="add-btn" (click)="toggleAddMode()"></button>
+    </div>
+
+    @if(isAddMode()) {
+    <div class="add-recipe-overlay">
+        <div class="add-recipe-container">
+            <h3>Add New Recipe</h3>
+            <form [formGroup]="addRecipeForm" (submit)="saveCustomRecipe()">
+                <div class="form-scroll-container">
+                    <input type="text" formControlName="strMeal" placeholder="Recipe Name" />
+                    <input type="text" formControlName="strCategory" placeholder="Category" />
+                    <input type="text" formControlName="strArea" placeholder="Area" />
+                    <input type="text" formControlName="strMealThumb" placeholder="Image URL (optional)" />
+                    <input type="text" formControlName="strYoutube" placeholder="Youtube Link (optional)" />
+                    <textarea formControlName="strInstructions" placeholder="Instructions"></textarea>
+                    <input type="text" formControlName="strTags" placeholder="Tags" />
+
+                    <!-- Ingredients Section -->
+                    <div class="ingredients-section" formArrayName="ingredients">
+                        <h4>Ingredients</h4>
+                        @for(group of ingredients.controls; track $index) {
+                            <div [formGroupName]="$index" class="ingredient-row">
+                                <input type="text" formControlName="ingredient" placeholder="Ingredient" />
+                                <input type="text" formControlName="measure" placeholder="Measure" />
+                                <button type="button" class="remove-btn" (click)="removeIngredient($index)">X</button>
+                            </div>
+                        }
+                        <button type="button" class="add-ingredient-btn" (click)="addIngredient()">+ Add Ingredient</button>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" (click)="toggleAddMode()">Cancel</button>
+                    <button type="submit" class="save-btn" [disabled]="!addRecipeForm.valid || ingredients.length === 0">Save Locally</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
     @if(selectedMeal()){
     <div class="recipie-item-big">
       <div

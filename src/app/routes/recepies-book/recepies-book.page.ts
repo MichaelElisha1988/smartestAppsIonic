@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import {
   FormControl,
   FormGroup,
+  FormArray,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -14,6 +16,7 @@ import { Meal } from 'src/app/models/meal.model';
 import { smartestAppsStore } from 'src/app/services/data-store.service';
 import { DataService } from 'src/app/services/data.service';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-recepies-book',
@@ -31,6 +34,8 @@ export class RecepiesBookPage implements OnInit {
   recipiesSrv = inject(RecipiesDataService);
   dataStore = inject(smartestAppsStore);
   dataHttp = inject(DataService);
+  http = inject(HttpClient); 
+
   notFav: boolean = true;
   searchFormStatusEffect = toSignal(this.searchForm.statusChanges);
   searchMealValueEffect = toSignal(
@@ -42,6 +47,35 @@ export class RecepiesBookPage implements OnInit {
   searchMealsInStok = signal<Meal[]>([]);
   favoriteMealList = signal<Meal[]>([]);
   tenMealsInStok: Meal[] = [];
+
+  addRecipeForm = new FormGroup({
+    strMeal: new FormControl('', Validators.required),
+    strCategory: new FormControl('', Validators.required),
+    strArea: new FormControl('', Validators.required),
+    strInstructions: new FormControl('', Validators.required),
+    strMealThumb: new FormControl(''),
+    strTags: new FormControl(''),
+    strYoutube: new FormControl(''),
+    ingredients: new FormArray([])
+  });
+  isAddMode = signal(false);
+
+  // Getter for ingredients form array
+  get ingredients() {
+      return this.addRecipeForm.get('ingredients') as FormArray;
+  }
+
+  addIngredient() {
+      const ingredientGroup = new FormGroup({
+          ingredient: new FormControl('', Validators.required),
+          measure: new FormControl('', Validators.required)
+      });
+      this.ingredients.push(ingredientGroup);
+  }
+
+  removeIngredient(index: number) {
+      this.ingredients.removeAt(index);
+  }
 
   constructor() {
     effect(() => {
@@ -67,40 +101,134 @@ export class RecepiesBookPage implements OnInit {
         );
       }
     });
+
+    // LOAD FAVORITES (API + FIREBASE CUSTOM)
     effect(() => {
-      this.favoriteMealList.set([]);
-      for (let i = 0; i < this.dataStore.favoriteMealList().length; i++) {
-        this.recipiesSrv
-          .getMealByName(this.dataStore.favoriteMealList()[i].name)
-          .pipe(take(1))
-          .subscribe((data) => {
-            this.favoriteMealList().push(data.meals[0]);
+       const apiFavs = this.dataStore.favoriteMealList();
+       this.refreshFavorites(apiFavs);
+    }, { allowSignalWrites: true });
+  }
+
+  async refreshFavorites(favList: any[]) {
+      this.favoriteMealList.set([]); 
+      
+      if (favList && favList.length > 0) {
+          favList.forEach(favItem => {
+              if (favItem.isCustom || favItem.strInstructions) {
+                   this.favoriteMealList.update(list => {
+                      if(!list.find(m => m.idMeal === favItem.idMeal)) {
+                           return [...list, favItem as Meal];
+                      }
+                      return list;
+                  });
+              } else {
+                   this.recipiesSrv
+                  .getMealByName(favItem.name)
+                  .pipe(take(1))
+                  .subscribe((data) => {
+                    if(data.meals && data.meals.length > 0) {
+                       this.favoriteMealList.update(list => {
+                           if(!list.find(m => m.idMeal === data.meals[0].idMeal)) {
+                               return [...list, data.meals[0]];
+                           }
+                           return list;
+                       });
+                    }
+                  });
+              }
           });
       }
-    });
   }
 
   addTofavorite() {
     if (this.selectedMeal()) {
-      this.favoriteMealList.update((list) => [
-        ...list,
-        this.selectedMeal() as Meal,
-      ]);
-
-      this.dataHttp.updateFavoriteMeal(this.selectedMeal()!.strMeal);
-      this.notFav = false;
+      if(!this.favoriteMealList().find(m => m.idMeal === this.selectedMeal()!.idMeal)) {
+           // Optimistic update
+          this.favoriteMealList.update((list) => [
+            ...list,
+            this.selectedMeal() as Meal,
+          ]);
+    
+          if (!this.isLocalRecipe(this.selectedMeal()!)) {
+              this.dataHttp.updateFavoriteMeal(this.selectedMeal()!.strMeal);
+          } else {
+              // Should not happen for new adds of API meals, but if it's a custom meal being re-added?
+              // Custom meals are added via saveCustomRecipe.
+              // If I am viewing a custom meal (that I just saved), it is already in favorites.
+          }
+           this.notFav = false;
+      }
     }
   }
 
   deleteFromFavorite() {
     if (this.selectedMeal()) {
+      const mealToDelete = this.selectedMeal()!;
+      
       this.favoriteMealList.update((list) =>
-        list.filter((meal) => meal.idMeal !== this.selectedMeal()!.idMeal)
+        list.filter((meal) => meal.idMeal !== mealToDelete.idMeal)
       );
-
-      this.dataHttp.deleteFavoriteMeal(this.selectedMeal()!.strMeal);
       this.notFav = true;
+
+      // Unify delete: By name (works for both API and Custom if strMeal/name aligns)
+      this.dataHttp.deleteFavoriteMeal(mealToDelete.strMeal);
     }
+  }
+
+  isLocalRecipe(meal: Meal): boolean {
+       // Helper to distinguish if needed, but primarily used to decide HOW to save.
+       // API meals have isCustom=false (implied)
+       return (meal as any).isCustom === true || meal.idMeal > 999999; 
+  }
+
+  async saveCustomRecipe() {
+      if(this.addRecipeForm.valid) {
+          const formVal = this.addRecipeForm.value;
+          
+          const ingredientsMap: any = {};
+          const formIngredients = this.ingredients.value;
+          
+          for (let i = 0; i < 20; i++) {
+              ingredientsMap[`strIngredient${i+1}`] = '';
+              ingredientsMap[`strMeasure${i+1}`] = '';
+              
+              if (i < formIngredients.length) {
+                   ingredientsMap[`strIngredient${i+1}`] = formIngredients[i].ingredient;
+                   ingredientsMap[`strMeasure${i+1}`] = formIngredients[i].measure;
+              }
+          }
+
+          const newMeal: Meal = {
+              idMeal: new Date().getTime(), 
+              strMeal: formVal.strMeal!,
+              strCategory: formVal.strCategory!,
+              strArea: formVal.strArea!,
+              strInstructions: formVal.strInstructions!,
+              strMealThumb: formVal.strMealThumb || 'assets/custom-recipe.png', 
+              strTags: formVal.strTags || '',
+              strYoutube: formVal.strYoutube || '',
+              ...ingredientsMap,
+              
+              strDrinkAlternate: null,
+              strSource: null,
+              strImageSource: '',
+              strCreativeCommonsConfirmed: null,
+              dateModified: null
+          };
+
+          // Save to Firebase directly
+          this.dataHttp.updateFavoriteMeal(newMeal); // This now accepts Meal object
+
+          this.favoriteMealList.update(list => [...list, newMeal]);
+          
+          this.isAddMode.set(false);
+          this.addRecipeForm.reset();
+          this.ingredients.clear();
+      }
+  }
+
+  toggleAddMode() {
+      this.isAddMode.set(!this.isAddMode());
   }
 
   ngOnInit() {

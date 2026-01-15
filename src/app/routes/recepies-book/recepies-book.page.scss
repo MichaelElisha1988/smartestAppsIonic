@@ -232,4 +232,245 @@
       }
     }
   }
+
+  .add-recipe-section {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99;
+    padding: 0;
+    
+    .add-btn {
+        background: var(--ion-color-secondary);
+        color: black;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 20px var(--c-secondary-glow);
+        cursor: pointer;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        &:hover {
+           transform: scale(1.1) rotate(90deg);
+           box-shadow: 0 0 30px var(--c-secondary-glow);
+        }
+        
+        // Remove text if we just want a plus, or style it
+        span {
+            font-size: 0; 
+        }
+        &::after {
+            content: "+";
+        }
+    }
+  }
+
+  .add-recipe-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      
+      .add-recipe-container {
+          width: 100%;
+          max-width: 500px;
+          max-height: 75vh; /* Fixed max height */
+          display: flex;
+          flex-direction: column;
+          
+          background: var(--glass-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid var(--ion-color-secondary);
+          border-radius: 24px;
+          padding: 20px;
+          box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), 0 0 10px rgba(0, 240, 255, 0.4); /* Intense double neon glow */
+          
+          h3 {
+             color: var(--ion-color-secondary);
+             text-align: center;
+             margin: 0 0 15px 0;
+             text-transform: uppercase;
+             letter-spacing: 2px;
+             font-size: 1.2rem;
+             text-shadow: 0 0 15px var(--c-secondary-glow), 0 0 5px var(--ion-color-secondary);
+             flex-shrink: 0;
+          }
+          
+          form {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              overflow: hidden; /* Contains scroll */
+              flex: 1;
+              
+              .form-scroll-container {
+                  flex: 1;
+                  overflow-y: auto;
+                  padding-right: 8px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+
+                  /* Scrollbar styling */
+                  &::-webkit-scrollbar { width: 4px; }
+                  &::-webkit-scrollbar-track { background: transparent; }
+                  &::-webkit-scrollbar-thumb { background: var(--ion-color-secondary); border-radius: 2px; box-shadow: 0 0 5px var(--c-secondary-glow); }
+              }
+
+              input, textarea {
+                  width: 100%;
+                  background: rgba(0, 0, 0, 0.2); 
+                  border: 1px solid var(--glass-border);
+                  color: var(--ion-text-color);
+                  padding: 10px 15px;
+                  border-radius: 12px;
+                  font-size: 0.95rem;
+                  outline: none;
+                  transition: 0.3s all;
+                  
+                  &::placeholder {
+                      color: var(--c-silver);
+                      font-size: 0.9rem;
+                  }
+                  
+                  &:focus {
+                      border-color: var(--ion-color-secondary);
+                      background: rgba(0, 240, 255, 0.05); /* Cyan tint */
+                      box-shadow: 0 0 15px var(--c-secondary-glow), inset 0 0 5px rgba(0, 240, 255, 0.1);
+                  }
+              }
+              textarea {
+                  min-height: 80px;
+                  resize: vertical;
+              }
+
+              .ingredients-section {
+                  margin-top: 5px;
+                  h4 {
+                      color: var(--ion-color-primary);
+                      margin-bottom: 8px;
+                      font-size: 0.85rem;
+                      text-transform: uppercase;
+                      letter-spacing: 1px;
+                      font-weight: 600;
+                      text-shadow: 0 0 5px var(--c-primary-glow);
+                  }
+
+                  .ingredient-row {
+                      display: flex;
+                      gap: 8px;
+                      margin-bottom: 8px;
+
+                      input { flex: 1; }
+                      
+                      .remove-btn {
+                          background: rgba(255, 77, 77, 0.1);
+                          border: 1px solid #ff4d4d;
+                          color: #ff4d4d;
+                          width: 38px;
+                          border-radius: 10px;
+                          cursor: pointer;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          transition: 0.3s;
+                          
+                          &:hover { 
+                              background: #ff4d4d; 
+                              color: white; 
+                              box-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
+                          }
+                      }
+                  }
+
+                  .add-ingredient-btn {
+                      background: transparent;
+                      border: 1px dashed var(--ion-color-secondary);
+                      color: var(--ion-color-secondary);
+                      width: 100%;
+                      padding: 10px;
+                      border-radius: 12px;
+                      cursor: pointer;
+                      transition: 0.3s;
+                      font-size: 0.85rem;
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      letter-spacing: 0.5px;
+                      
+                      &:hover {
+                          background: rgba(0, 240, 255, 0.1);
+                          box-shadow: 0 0 20px var(--c-secondary-glow);
+                          border-style: solid;
+                          text-shadow: 0 0 5px var(--ion-color-secondary);
+                      }
+                  }
+              }
+              
+              .form-actions {
+                  display: flex;
+                  justify-content: space-between;
+                  margin-top: 10px;
+                  flex-shrink: 0;
+                  
+                  button {
+                      padding: 10px 24px;
+                      border-radius: 20px;
+                      border: 1px solid transparent;
+                      font-weight: 700;
+                      cursor: pointer;
+                      transition: 0.3s all;
+                      font-size: 0.9rem;
+                      text-transform: uppercase;
+                      letter-spacing: 0.5px;
+                      
+                      &.cancel-btn {
+                          background: transparent;
+                          border-color: #ff4d4d;
+                          color: #ff4d4d;
+                          &:hover { 
+                              background: #ff4d4d; 
+                              color: white; 
+                              box-shadow: 0 0 20px rgba(255, 77, 77, 0.6);
+                          }
+                      }
+                      
+                      &.save-btn {
+                          background: var(--ion-color-secondary);
+                          color: black;
+                          border-color: var(--ion-color-secondary);
+                          
+                          &:hover { 
+                              transform: translateY(-2px);
+                              box-shadow: 0 0 30px param(--c-secondary-glow), 0 0 10px #fff;
+                              background: #fff;
+                              color: var(--ion-color-secondary);
+                          }
+                          &:disabled { 
+                              opacity: 0.5; 
+                              cursor: not-allowed; 
+                              transform: none; 
+                              box-shadow: none; 
+                              background: var(--ion-color-secondary);
+                              color: black;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
 }

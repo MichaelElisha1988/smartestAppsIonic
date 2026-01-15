@@ -13,4 +13,7 @@ export interface TaskModel {
   isCheckBox: boolean;
   seeInfo: boolean;
   didIt: boolean;
+  isShared?: boolean;
+  sharedBy?: string;
+  ownerListName?: string;
 }
