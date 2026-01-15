@@ -38,8 +38,8 @@ export class RecepieItemPage implements OnInit {
 
   constructor() {}
 
-  addIng(ingInfo: string, addIng: string) {
-    let tmpListId: ListId[] = this.dataSrv.getListId();
+  async addIng(ingInfo: string, addIng: string) {
+    let tmpListId: ListId[] = this.dataSrv.listId();
     let shoppingListId = tmpListId.find((x: ListId) => {
       return x.name == 'shopping list';
     });
@@ -56,20 +56,24 @@ export class RecepieItemPage implements OnInit {
         : '';
     } else {
       this.dataSrv.updateListId('shopping list');
-      tmpListId = this.dataSrv.getListId();
+      // Wait for update to propagate or just assume it's added locally? 
+      // The updateListId updates signal locally too.
+      tmpListId = this.dataSrv.listId();
       shoppingListId = tmpListId.find((x: ListId) => {
         return x.name == 'shopping list';
       });
-      this.dataSrv.setSelectedListId(shoppingListId!.id);
-      this.createTaskModel(ingInfo, addIng)
-        ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
-        : '';
+      if(shoppingListId) {
+          this.dataSrv.setSelectedListId(shoppingListId!.id);
+          this.createTaskModel(ingInfo, addIng)
+            ? this.dataSrv.updateTaskList(this.createTaskModel(ingInfo, addIng)!)
+            : '';
+      }
     }
   }
 
   createTaskModel(ingInfo: string, addIng: string): TaskModel | null {
     if (ingInfo && addIng) {
-      let task = this.dataSrv.taskList.find((x) => {
+      let task = this.dataSrv.taskList().find((x) => {
         return x.task.toLowerCase() == addIng.toLowerCase();
       });
       if (task) {

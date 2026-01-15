@@ -49,6 +49,7 @@ export class LoginPage {
   });
   errorMsg: string | null = null;
   isRegister: boolean = false;
+  isReset: boolean = false;
 
   constructor() {}
 
@@ -56,6 +57,7 @@ export class LoginPage {
 
   register() {
     this.isRegister = !this.isRegister;
+    this.isReset = false;
     this.errorMsg = '';
     this.isRegister
       ? this.loginForm.controls.passwordConfirm.addValidators(
@@ -68,8 +70,36 @@ export class LoginPage {
     this.loginForm.controls.passwordConfirm.updateValueAndValidity();
   }
 
+  toggleReset() {
+      this.isReset = !this.isReset;
+      this.isRegister = false;
+      this.errorMsg = '';
+  }
+
   onSubmit(isRegister: boolean) {
     this.errorMsg = '';
+    
+    // RESET PASSWORD LOGIC
+    if (this.isReset) {
+        if (this.loginForm.controls.usenName.valid) {
+            this.loaderService.showLoader(true);
+            this.loginSrv.resetPassword(this.loginForm.controls.usenName.value!)
+            .then(() => {
+                this.loaderService.showLoader(false);
+                this.dataStore.setLoginError('Reset email sent! Check your inbox.');
+                this.isReset = false;
+            })
+            .catch((error) => {
+                this.loaderService.showLoader(false);
+                this.dataStore.setLoginError(error.message);
+            });
+        } else {
+             this.dataStore.setLoginError('Please enter a valid email address.');
+        }
+        return;
+    }
+
+    // REGISTER LOGIC
     if (isRegister) {
       if (
         this.loginForm.controls.password.value ===
@@ -102,6 +132,7 @@ export class LoginPage {
         );
       }
     } else {
+      // LOGIN LOGIC
       this.loaderService.showLoader(true);
       this.loginSrv.signIn(
         this.loginForm.controls.usenName.value!,

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TaskModel } from 'src/app/models/task.model';
@@ -29,42 +29,39 @@ export class TaskComponent implements OnInit {
   });
 
   constructor(private readonly dataSrv: DataService) {
-    this.dataSrv.taskList$.subscribe((listupdatas) => {
-      this.taskList = listupdatas;
+    effect(() => {
+        this.taskList = this.dataSrv.taskList();
     });
-    this.dataSrv.ListIdChg$.subscribe((onChgSelection) => {
-      // Sort: Not Done first, then Done
-      this.shownList = this.taskList
+
+    effect(() => {
+        const onChgSelection = this.dataSrv.selectedId();
+        // Sort: Not Done first, then Done
+        this.shownList = this.dataSrv.taskList()
         .filter((x) => x.listID == onChgSelection)
         .sort((a, b) => {
-          if (a.didIt === b.didIt) return 0;
-          return a.didIt ? 1 : -1;
+            if (a.didIt === b.didIt) return 0;
+            return a.didIt ? 1 : -1;
         });
 
-      setTimeout(() => {
+        setTimeout(() => {
         document
-          .querySelectorAll<HTMLElement>('.effect-section')
-          .forEach((task) => {
+            .querySelectorAll<HTMLElement>('.effect-section')
+            .forEach((task) => {
             const taskObj: TaskModel[] = this.taskList.filter((x) =>
-              task.parentElement!.classList.contains(x.id + '')
+                task.parentElement!.classList.contains(x.id + '')
             );
             if (taskObj.length > 0) {
-              task.style.backgroundColor = '#' + taskObj[0].color;
-              task.style.boxShadow = `0px 0px 35px #${taskObj[0].color}`;
+                task.style.backgroundColor = '#' + taskObj[0].color;
+                task.style.boxShadow = `0px 0px 35px #${taskObj[0].color}`;
             }
-          });
-      });
+            });
+        });
     });
   }
 
   ngOnInit(): void {}
 
   expand(event: any) {
-    // if (event.target?.classList?.contains('task')) {
-    //   this.lastexpandTask?.target?.classList?.remove('extend');
-    //   event.target.classList.add('extend');
-    //   this.lastexpandTask = event;
-    // }
   }
   didIt(event: any, task: TaskModel) {
     task.didIt = !task.didIt;
@@ -81,7 +78,7 @@ export class TaskComponent implements OnInit {
     this.dataSrv.updateTaskData(task);
   }
   shownInfo(task: TaskModel) {
-    this.taskList.map((x) => {
+    this.taskList.forEach((x) => {
       x.seeInfo = false;
     });
     if (!this.taskInfoSeen) {

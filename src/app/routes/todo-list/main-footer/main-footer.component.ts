@@ -1,5 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, inject, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from 'src/app/services/data.service';
 import { PopUpService } from 'src/app/services/popups.service';
@@ -10,6 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { smartestAppsStore } from 'src/app/services/data-store.service';
 
 @Component({
   selector: 'main-footer',
@@ -18,14 +18,11 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
 })
-export class MainFooterComponent implements OnInit, OnDestroy {
+export class MainFooterComponent implements OnInit {
   addTaskMode: boolean = false;
-  constructor(
-    private readonly popupSrv: PopUpService,
-    private readonly dataSrv: DataService
-  ) {}
+  smartestAppsStore = inject(smartestAppsStore);
+  
   listIdIsEmpty: boolean = false;
-  Sub$ = new Subscription();
 
   taskform = new FormGroup({
     title: new FormControl('', {
@@ -34,16 +31,22 @@ export class MainFooterComponent implements OnInit, OnDestroy {
     }),
   });
 
+  constructor(
+    private readonly popupSrv: PopUpService,
+    private readonly dataSrv: DataService
+  ) {
+      effect(() => {
+          if(this.dataSrv.selectedId()) {
+              this.listIdIsEmpty = true;
+          } else {
+              this.listIdIsEmpty = false;
+          }
+      });
+  }
+
   ngOnInit(): void {
-    this.Sub$.add(
-      this.dataSrv.ListIdChg$.subscribe((listId) => {
-        listId ? (this.listIdIsEmpty = true) : '';
-      })
-    );
-  }
-  ngOnDestroy(): void {
-    this.Sub$.unsubscribe();
-  }
+  } 
+
 
   openAddTask() {
     this.addTaskMode = !this.addTaskMode;
@@ -52,13 +55,17 @@ export class MainFooterComponent implements OnInit, OnDestroy {
     } else {
       this.taskform.reset();
     }
-    // document.body.style.overflow = 'hidden';
-    // this.popupSrv.addTaskOCPopUp(false);
   }
 
-  refreshList() {
-    this.dataSrv.getTaskList();
-    this.dataSrv.getListId();
+  async refreshList() {
+    this.smartestAppsStore.showLoader(true);
+    await Promise.all([
+        this.dataSrv.getTaskList(),
+        this.dataSrv.getListId()
+    ]);
+    setTimeout(() => {
+      this.smartestAppsStore.showLoader(false);
+    }, 1000);
   }
 
   createTaskModel(): TaskModel {

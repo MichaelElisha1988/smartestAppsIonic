@@ -1,5 +1,4 @@
-import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { TaskModel } from '../models/task.model';
 import { FirebaseApp } from 'firebase/app';
 import {
@@ -23,11 +22,13 @@ import { smartestAppsStore } from './data-store.service';
   providedIn: 'root',
 })
 export class DataService {
-  taskList: TaskModel[] = [];
-  listId: ListId[] = [];
-  sharingEmails: SharingEmail[] = [];
-  sharedEmails: SharedEmail = { nameSharedLists: [] };
-  selectedId: number = 0;
+  taskList = signal<TaskModel[]>([]);
+  listId = signal<ListId[]>([]);
+  sharingEmails = signal<SharingEmail[]>([]);
+  sharedEmails = signal<SharedEmail>({ nameSharedLists: [] });
+  selectedId = signal<number>(0);
+  favoriteMealList = signal<{ dbId?: string; id: number; name: string }[]>([]);
+
   fbDataBase: FirebaseApp;
   DataBaseApp: any;
   listIdRef: CollectionReference;
@@ -43,22 +44,6 @@ export class DataService {
   loginSrv = inject(LoginService);
   dataStore = inject(smartestAppsStore);
   router = inject(Router);
-
-  private readonly TaskListSubject = new BehaviorSubject<TaskModel[]>([]);
-  readonly taskList$ = this.TaskListSubject.asObservable();
-
-  private readonly ListIdSubject = new BehaviorSubject<ListId[]>([]);
-  readonly ListId$ = this.ListIdSubject.asObservable();
-
-  private readonly favoriteMealListSubject = new BehaviorSubject<
-    { dbId?: string; id: number; name: string }[]
-  >([]);
-  readonly favoriteMealList$ = this.favoriteMealListSubject.asObservable();
-
-  private readonly ListIdChgSubject = new BehaviorSubject<number>(0);
-  readonly ListIdChg$ = this.ListIdChgSubject.asObservable();
-
-  Sub$ = new Subscription();
 
   constructor() {
     localStorage.getItem('login') ? '' : this.router.navigate(['']);
@@ -87,11 +72,24 @@ export class DataService {
     /////////////////////////////////////
 
     // GET FIRST DATA FIREBASE/SESSION
-    this.getSharingEmails();
-    this.getSharedEmails();
-    this.getListId();
-    this.getTaskList();
-    this.getFavoriteMealList();
+    this.initData();
+
+    // Effect to persist selectedId to localStorage whenever it changes
+    effect(() => {
+      localStorage.setItem('selectedListId', this.selectedId().toString());
+    });
+  }
+
+  async initData() {
+    // 1. Fetch emails FIRST to know about shared lists
+    await Promise.all([this.getSharingEmails(), this.getSharedEmails()]);
+
+    // 2. Then fetch lists and tasks, now that we have sharing info
+    await Promise.all([
+      this.getListId(),
+      this.getTaskList(),
+      this.getFavoriteMealList(),
+    ]);
   }
 
   getLoginName(): string {
@@ -101,160 +99,174 @@ export class DataService {
     return JSON.parse(localStorage.getItem('login')!).email.split('@')[0];
   }
 
-  getListId(): ListId[] {
+  async getListId() {
     let tmpListId: ListId[] = [];
 
-    getDocs(this.listIdRef!)
-      .then((data) => {
-        data.docs.forEach((data) => {
-          tmpListId.push({ ...(data.data() as ListId), dbId: data.id });
-        });
-      })
-      .then(() => {
-        if (this.sharingEmails.length > 0) {
-          this.sharingEmails.forEach((email) => {
-            email.nameSharedLists.forEach((nameList) => {
-              this.sharedListIdRef = collection(
-                this.DataBaseApp,
-                `sharedListId${shajs('sha256')
-                  .update(email.allowedEmail + nameList)
-                  .digest('hex')}`
-              );
-              getDocs(this.sharedListIdRef!).then((data) => {
-                data.docs.forEach((data) => {
+    await getDocs(this.listIdRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpListId.push({ ...(data.data() as ListId), dbId: data.id });
+      });
+    });
+
+    if (this.sharingEmails().length > 0) {
+      const sharingPromises = this.sharingEmails().map((email) => {
+        return Promise.all(
+          email.nameSharedLists.map((nameList) => {
+            this.sharedListIdRef = collection(
+              this.DataBaseApp,
+              `sharedListId${shajs('sha256')
+                .update(email.allowedEmail + nameList)
+                .digest('hex')}`
+            );
+            return getDocs(this.sharedListIdRef!).then((data) => {
+              data.docs.forEach((data) => {
+                // Check duplicate before pushing
+                if (!tmpListId.find((x) => x.id === (data.data() as ListId).id)) {
                   tmpListId.push({
                     ...(data.data() as ListId),
                     dbId: data.id,
                   });
-                });
+                }
               });
             });
-          });
-        }
-      })
-      .then(() => {
-        if (this.sharedEmails && this.sharedEmails.nameSharedLists.length > 0) {
-          this.sharedEmails.nameSharedLists.forEach((listName) => {
-            this.sharedListIdRef = collection(
-              this.DataBaseApp,
-              `sharedListId${shajs('sha256')
-                .update(
-                  JSON.parse(localStorage.getItem('login')!).email + listName
-                )
-                .digest('hex')}`
-            );
-            getDocs(this.sharedListIdRef!).then((data) => {
-              data.docs.forEach((data) => {
+          })
+        );
+      });
+      await Promise.all(sharingPromises);
+    }
+
+    if (this.sharedEmails() && this.sharedEmails().nameSharedLists.length > 0) {
+      const sharedPromises = this.sharedEmails().nameSharedLists.map((listName) => {
+        this.sharedListIdRef = collection(
+          this.DataBaseApp,
+          `sharedListId${shajs('sha256')
+            .update(
+              JSON.parse(localStorage.getItem('login')!).email + listName
+            )
+            .digest('hex')}`
+        );
+        return getDocs(this.sharedListIdRef!).then((data) => {
+          data.docs.forEach((data) => {
+             // Check duplicate before pushing
+             if (!tmpListId.find((x) => x.id === (data.data() as ListId).id)) {
                 tmpListId.push({ ...(data.data() as ListId), dbId: data.id });
-              });
-            });
+             }
           });
-        }
-      })
-      .then(() => {
-        this.listId = tmpListId;
-        this.ListIdSubject.next(this.listId);
-        setTimeout(() => {
-          this.ListIdChgSubject.next(this.selectedId);
         });
       });
+      await Promise.all(sharedPromises);
+    }
 
-    return this.listId;
+    this.listId.set(tmpListId);
+    
+    // Initialize persistence logic here if needed, or rely on component
+    const savedId = localStorage.getItem('selectedListId');
+    if (savedId) {
+       // Use loose equality match to handle string vs number issues
+       const found = tmpListId.find(l => l.id == (savedId as any));
+       if (found) {
+           this.selectedId.set(found.id);
+       } else if (tmpListId.length > 0) {
+           this.selectedId.set(tmpListId[0].id);
+       }
+    } else if (tmpListId.length > 0) {
+        this.selectedId.set(tmpListId[0].id);
+    }
   }
 
-  getFavoriteMealList() {
+  async getFavoriteMealList() {
     let tmpFavoriteMealList: { dbId?: string; id: number; name: string }[] = [];
 
-    getDocs(this.favoriteMealRef!)
-      .then((data) => {
-        data.docs.forEach((data) => {
-          tmpFavoriteMealList.push({
-            ...(data.data() as { dbId?: string; id: number; name: string }),
-            dbId: data.id,
-          });
+    await getDocs(this.favoriteMealRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpFavoriteMealList.push({
+          ...(data.data() as { dbId?: string; id: number; name: string }),
+          dbId: data.id,
         });
-      })
-      .then(() => {
-        this.dataStore.setFavoriteMealList(tmpFavoriteMealList);
       });
+    });
+
+    this.favoriteMealList.set(tmpFavoriteMealList);
+    this.dataStore.setFavoriteMealList(tmpFavoriteMealList);
   }
 
-  getTaskList() {
+  async getTaskList() {
     let tmpTaskList: TaskModel[] = [];
 
-    getDocs(this.taskListRef!)
-      .then((data) => {
-        data.docs.forEach((data) => {
-          tmpTaskList.push({ ...(data.data() as TaskModel), dbId: data.id });
-        });
-      })
-      .then(() => {
-        this.sharingEmails.forEach((email) => {
-          email.nameSharedLists.forEach((nameList) => {
-            this.sharedTaskListRef = collection(
-              this.DataBaseApp,
-              `sharedTaskList${shajs('sha256')
-                .update(email.allowedEmail + nameList)
-                .digest('hex')}`
-            );
-            getDocs(this.sharedTaskListRef!).then((data) => {
-              data.docs.forEach((data) => {
-                tmpTaskList.push({
-                  ...(data.data() as TaskModel),
-                  dbId: data.id,
-                });
-              });
-            });
-          });
-        });
-      })
-      .then(() => {
-        if (this.sharedEmails && this.sharedEmails.nameSharedLists.length > 0) {
-          this.sharedEmails.nameSharedLists.forEach((listname) => {
-            this.sharedTaskListRef = collection(
-              this.DataBaseApp,
-              `sharedTaskList${shajs('sha256')
-                .update(
-                  JSON.parse(localStorage.getItem('login')!).email + listname
-                )
-                .digest('hex')}`
-            );
-
-            getDocs(this.sharedTaskListRef!).then((data) => {
-              data.docs.forEach((data) => {
-                tmpTaskList.push({
-                  ...(data.data() as TaskModel),
-                  dbId: data.id,
-                });
-              });
-            });
-          });
-        }
-      })
-      .then(() => {
-        this.taskList = tmpTaskList;
-        this.TaskListSubject.next(this.taskList);
+    await getDocs(this.taskListRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpTaskList.push({ ...(data.data() as TaskModel), dbId: data.id });
       });
+    });
+
+    const sharingPromises = this.sharingEmails().map((email) => {
+      return Promise.all(
+        email.nameSharedLists.map((nameList) => {
+          this.sharedTaskListRef = collection(
+            this.DataBaseApp,
+            `sharedTaskList${shajs('sha256')
+              .update(email.allowedEmail + nameList)
+              .digest('hex')}`
+          );
+          return getDocs(this.sharedTaskListRef!).then((data) => {
+            data.docs.forEach((data) => {
+               if(!tmpTaskList.find(x => x.id === (data.data() as TaskModel).id)){
+                  tmpTaskList.push({
+                    ...(data.data() as TaskModel),
+                    dbId: data.id,
+                  });
+               }
+            });
+          });
+        })
+      );
+    });
+    await Promise.all(sharingPromises);
+
+    if (this.sharedEmails() && this.sharedEmails().nameSharedLists.length > 0) {
+      const sharedPromises = this.sharedEmails().nameSharedLists.map((listname) => {
+        this.sharedTaskListRef = collection(
+          this.DataBaseApp,
+          `sharedTaskList${shajs('sha256')
+            .update(
+              JSON.parse(localStorage.getItem('login')!).email + listname
+            )
+            .digest('hex')}`
+        );
+
+        return getDocs(this.sharedTaskListRef!).then((data) => {
+          data.docs.forEach((data) => {
+             if(!tmpTaskList.find(x => x.id === (data.data() as TaskModel).id)){
+                tmpTaskList.push({
+                  ...(data.data() as TaskModel),
+                  dbId: data.id,
+                });
+             }
+          });
+        });
+      });
+      await Promise.all(sharedPromises);
+    }
+
+    this.taskList.set(tmpTaskList);
   }
 
-  getSharingEmails() {
+  async getSharingEmails() {
     let tmpSharingEmails: SharingEmail[] = [];
 
-    getDocs(this.sharingWithEmailsRef!)
-      .then((data) => {
-        data.docs.forEach((data) => {
-          tmpSharingEmails.push({
-            ...(data.data() as SharingEmail),
-            dbId: data.id,
-          });
+    await getDocs(this.sharingWithEmailsRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpSharingEmails.push({
+          ...(data.data() as SharingEmail),
+          dbId: data.id,
         });
-      })
-      .then(() => {
-        this.sharingEmails = tmpSharingEmails;
       });
+    });
+
+    this.sharingEmails.set(tmpSharingEmails);
   }
 
-  getSharedEmails() {
+  async getSharedEmails() {
     let tmpSharedEmails: SharedEmail | undefined;
 
     this.sharedEmailsRef = collection(
@@ -264,23 +276,21 @@ export class DataService {
         .digest('hex')}`
     );
 
-    getDocs(this.sharedEmailsRef!)
-      .then((data) => {
-        data.docs.forEach((data) => {
-          tmpSharedEmails = {
-            nameSharedLists: [
-              ...(tmpSharedEmails?.nameSharedLists || []),
-              ...(data.data() as SharedEmail).nameSharedLists,
-            ],
-            dbId: data.id,
-          };
-        });
-      })
-      .then(() => {
-        if (tmpSharedEmails) {
-          this.sharedEmails = tmpSharedEmails;
-        }
+    await getDocs(this.sharedEmailsRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpSharedEmails = {
+          nameSharedLists: [
+            ...(tmpSharedEmails?.nameSharedLists || []),
+            ...(data.data() as SharedEmail).nameSharedLists,
+          ],
+          dbId: data.id,
+        };
       });
+    });
+
+    if (tmpSharedEmails) {
+      this.sharedEmails.set(tmpSharedEmails);
+    }
   }
 
   getDateString(): string {
@@ -288,7 +298,7 @@ export class DataService {
   }
 
   getSelectedListId(): number {
-    return this.selectedId;
+    return this.selectedId();
   }
 
   setLoginName(logUser: string) {
@@ -300,8 +310,7 @@ export class DataService {
   }
 
   setSelectedListId(id: number) {
-    this.selectedId = id;
-    this.ListIdChgSubject.next(id);
+    this.selectedId.set(id);
   }
 
   updateListId(name: string) {
@@ -318,12 +327,11 @@ export class DataService {
         : '',
     };
     addDoc(this.listIdRef!, listItem);
-    this.listId.push(listItem);
+    this.listId.update(prev => [...prev, listItem]);
     localStorage.setItem(
       `listId${JSON.parse(localStorage.getItem('login')!).uid}`,
-      JSON.stringify(this.listId)
+      JSON.stringify(this.listId())
     );
-    this.ListIdSubject.next(this.listId);
     this.getListId();
   }
 
@@ -346,11 +354,11 @@ export class DataService {
 
   updateTaskList(task: TaskModel) {
     task.id = new Date().valueOf();
-    task.listID = this.selectedId;
-    const tmpListItem: ListId | undefined = this.listId.find(
+    task.listID = this.selectedId();
+    const tmpListItem: ListId | undefined = this.listId().find(
       (x) => x.id == task.listID
     )
-      ? this.listId.find((x) => x.id == task.listID)
+      ? this.listId().find((x) => x.id == task.listID)
       : undefined;
 
     if (!tmpListItem?.isShared) {
@@ -364,18 +372,15 @@ export class DataService {
       );
       addDoc(colRef!, task);
     }
-    this.taskList.push(task);
-    this.TaskListSubject.next(this.taskList);
-    this.ListIdChgSubject.next(this.selectedId);
-
+    this.taskList.update(prev => [...prev, task]);
     this.getTaskList();
   }
 
   updateTaskData(task: TaskModel) {
-    const tmpListItem: ListId | undefined = this.listId.find(
+    const tmpListItem: ListId | undefined = this.listId().find(
       (x) => x.id == task.listID
     );
-    const dbId = this.taskList.find((x) => x.id == task.id)?.dbId;
+    const dbId = this.taskList().find((x) => x.id == task.id)?.dbId;
     if (!dbId) {
       console.error('Invalid dbId for updateTaskData:', task);
       return;
@@ -397,10 +402,12 @@ export class DataService {
       );
       updateDoc(docRef, { ...task });
     }
+    // Update local state implicitly or re-fetch (re-fetch is safer for now)
+    this.getTaskList();
   }
 
   updateListData(list: ListId) {
-    const dbId = this.listId.find((x) => x.id == list.id)?.dbId;
+    const dbId = this.listId().find((x) => x.id == list.id)?.dbId;
     if (!dbId) {
       console.error('Invalid dbId for updateListData:', list);
       return;
@@ -411,16 +418,17 @@ export class DataService {
       dbId
     );
     updateDoc(docRef, { ...list });
+    this.getListId();
   }
 
   deleteTask(id: number) {
-    const dbId = this.taskList.find((x) => x.id == id)?.dbId;
+    const dbId = this.taskList().find((x) => x.id == id)?.dbId;
     if (!dbId) {
       console.error('Invalid dbId for deleteTask:', id);
       return;
     }
-    const tmpListItem: ListId | undefined = this.listId.find(
-      (x) => x.id == this.selectedId
+    const tmpListItem: ListId | undefined = this.listId().find(
+      (x) => x.id == this.selectedId()
     );
     if (!tmpListItem?.isShared) {
       const docRef = doc(
@@ -440,9 +448,7 @@ export class DataService {
       deleteDoc(docRef);
     }
 
-    this.taskList = this.taskList.filter((x) => x.id != id);
-    this.TaskListSubject.next(this.taskList);
-    this.ListIdChgSubject.next(this.selectedId);
+    this.taskList.update(prev => prev.filter((x) => x.id != id));
   }
 
   deleteFavoriteMeal(mealName: string) {
@@ -465,8 +471,8 @@ export class DataService {
   deleteList(id: number, taskIds: TaskModel[]) {
     taskIds.forEach((x) => this.deleteTask(x.id));
 
-    const tmpListIdItem = this.listId.find((item) => item.id == id);
-    const dbId = this.listId.find((x) => x.id == id)?.dbId;
+    const tmpListIdItem = this.listId().find((item) => item.id == id);
+    const dbId = this.listId().find((x) => x.id == id)?.dbId;
     if (!dbId) {
       console.error('Invalid dbId for deleteList:', id);
       return;
@@ -481,12 +487,12 @@ export class DataService {
     } else {
       let tmpAllowedEmails: SharingEmail;
       let tmpOldAllowedEmails: SharingEmail | undefined | null =
-        this.sharingEmails.find((x) => {
+        this.sharingEmails().find((x) => {
           return x.allowedEmail == tmpListIdItem?.sharedWith;
         });
 
       if (tmpOldAllowedEmails) {
-        const dbIdSharingEmail = this.sharingEmails.find((x) => {
+        const dbIdSharingEmail = this.sharingEmails().find((x) => {
           return x.allowedEmail == tmpListIdItem?.sharedWith;
         })?.dbId;
         if (dbIdSharingEmail) {
@@ -518,20 +524,23 @@ export class DataService {
       );
       deleteDoc(docRef);
     }
-    this.listId = this.listId.filter((x) => x.id != id);
-    this.ListIdSubject.next(this.listId);
-    this.ListIdChgSubject.next(this.selectedId);
+    this.listId.update(prev => prev.filter((x) => x.id != id));
+    
+    // Select first list if one exists
+    if(this.listId().length > 0) {
+        this.selectedId.set(this.listId()[0].id);
+    }
   }
 
   createSharedList(listId: number, sheredWithEmail: string) {
-    const shareListItem = this.listId.find((x) => x.id == listId);
-    const allListTasks = this.taskList.filter((x) => {
+    const shareListItem = this.listId().find((x) => x.id == listId);
+    const allListTasks = this.taskList().filter((x) => {
       return x.listID == listId;
     });
-    let tmpTasktoSharedList = this.taskList.filter((x) => {
+    let tmpTasktoSharedList = this.taskList().filter((x) => {
       return x.listID == listId;
     });
-    this.deleteList(this.selectedId, allListTasks);
+    this.deleteList(this.selectedId(), allListTasks);
     shareListItem
       ? ((shareListItem!.showSharedList = false),
         (shareListItem!.isShared = true),
@@ -540,11 +549,11 @@ export class DataService {
 
     let tmpAllowedEmails: SharingEmail;
     let tmpOldAllowedEmails: SharingEmail | undefined | null =
-      this.sharingEmails.find((x) => {
+      this.sharingEmails().find((x) => {
         return x.allowedEmail == sheredWithEmail;
       });
     if (tmpOldAllowedEmails) {
-      const dbIdSharingEmail = this.sharingEmails.find((x) => {
+      const dbIdSharingEmail = this.sharingEmails().find((x) => {
         return x.allowedEmail == sheredWithEmail;
       })?.dbId;
       if (dbIdSharingEmail) {
@@ -576,27 +585,30 @@ export class DataService {
     );
 
     if (
-      this.sharingEmails &&
-      this.sharingEmails?.length > 0 &&
-      this.sharingEmails.find((x) => x.allowedEmail == sheredWithEmail)
+      this.sharingEmails() &&
+      this.sharingEmails()?.length > 0 &&
+      this.sharingEmails().find((x) => x.allowedEmail == sheredWithEmail)
     ) {
       const docSharedRef = doc(
         this.DataBaseApp,
         `sharedEmails${shajs('sha256')
           .update(`${sheredWithEmail}`)
           .digest('hex')}`,
-        this.sharedEmails?.dbId || ''
+        this.sharedEmails()?.dbId || ''
       );
 
-      if (this.sharedEmails?.dbId) {
-        this.sharedEmails.nameSharedLists.push(shareListItem?.name!);
-        updateDoc(docSharedRef, { ...this.sharedEmails });
+      if (this.sharedEmails()?.dbId) {
+        this.sharedEmails().nameSharedLists.push(shareListItem?.name!);
+        updateDoc(docSharedRef, { ...this.sharedEmails() });
       }
     } else {
-      this.sharedEmails = {
+      const newSharedEmails = {
         nameSharedLists: [shareListItem?.name!],
       };
-      addDoc(this.sharedEmailsRef!, this.sharedEmails);
+      // We can't update 'sharedEmails' signal directly with partial data easily due to type mismatch or logic complexity
+      // but conceptually we are pushing to DB.
+      // Re-fetching will sync the signal.
+      addDoc(this.sharedEmailsRef!, newSharedEmails);
     }
 
     this.sharedListIdRef = collection(
@@ -618,14 +630,6 @@ export class DataService {
       addDoc(this.sharedTaskListRef!, task);
     });
 
-    // const dbId = this.listId.find((x) => x.id == listId)?.dbId;
-    // const docRefList = doc(
-    //   this.DataBaseApp,
-    //   `listId${JSON.parse(localStorage.getItem('login')!).uid}`,
-    //   dbId!
-    // );
-    // deleteDoc(docRefList);
-
     this.getSharingEmails();
     this.getSharedEmails();
     this.getListId();
@@ -634,10 +638,10 @@ export class DataService {
 
   fordev() {
     console.log('for dev');
-    console.log(this.sharingEmails);
-    console.log(this.sharedEmails);
-    console.log(this.listId);
-    console.log(this.taskList);
+    console.log(this.sharingEmails());
+    console.log(this.sharedEmails());
+    console.log(this.listId());
+    console.log(this.taskList());
     console.log(this.dataStore.favoriteMealList());
   }
 }
