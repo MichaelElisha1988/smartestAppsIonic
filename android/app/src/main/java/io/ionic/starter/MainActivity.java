@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.smartestapps;
 
 import com.getcapacitor.BridgeActivity;
 
