@@ -446,11 +446,13 @@ export class DataService {
     if (!tmpListItem?.isShared) {
       addDoc(this.taskListRef!, task);
     } else {
+      const collectionKey = Array.isArray(tmpListItem.sharedWith) 
+          ? shajs('sha256').update(`${tmpListItem.sharedBy}${tmpListItem.name}`).digest('hex')
+          : shajs('sha256').update(`${tmpListItem.sharedWith}${tmpListItem.name}`).digest('hex');
+
       const colRef = collection(
         this.DataBaseApp,
-        `sharedTaskList${shajs('sha256')
-          .update(`${tmpListItem?.sharedWith}${tmpListItem?.name}`)
-          .digest('hex')}`
+        `sharedTaskList${collectionKey}`
       );
       addDoc(colRef!, task);
     }
@@ -475,11 +477,13 @@ export class DataService {
       );
       updateDoc(docRef, { ...task });
     } else {
+      const collectionKey = Array.isArray(tmpListItem.sharedWith) 
+          ? shajs('sha256').update(`${tmpListItem.sharedBy}${tmpListItem.name}`).digest('hex')
+          : shajs('sha256').update(`${tmpListItem.sharedWith}${tmpListItem.name}`).digest('hex');
+          
       const docRef = doc(
         this.DataBaseApp,
-        `sharedTaskList${shajs('sha256')
-          .update(`${tmpListItem?.sharedWith}${tmpListItem?.name}`)
-          .digest('hex')}`,
+        `sharedTaskList${collectionKey}`,
         dbId
       );
       updateDoc(docRef, { ...task });
@@ -520,11 +524,13 @@ export class DataService {
       );
       deleteDoc(docRef);
     } else {
+      const collectionKey = Array.isArray(tmpListItem.sharedWith) 
+          ? shajs('sha256').update(`${tmpListItem.sharedBy}${tmpListItem.name}`).digest('hex')
+          : shajs('sha256').update(`${tmpListItem.sharedWith}${tmpListItem.name}`).digest('hex');
+
       const docRef = doc(
         this.DataBaseApp,
-        `sharedTaskList${shajs('sha256')
-          .update(`${tmpListItem?.sharedWith}${tmpListItem?.name}`)
-          .digest('hex')}`,
+        `sharedTaskList${collectionKey}`,
         dbId
       );
       deleteDoc(docRef);
@@ -567,41 +573,48 @@ export class DataService {
       );
       deleteDoc(docRef);
     } else {
-      let tmpAllowedEmails: SharingEmail;
-      let tmpOldAllowedEmails: SharingEmail | undefined | null =
-        this.sharingEmails().find((x) => {
-          return x.allowedEmail == tmpListIdItem?.sharedWith;
-        });
+      const sharedWithList: string[] = Array.isArray(tmpListIdItem.sharedWith) 
+          ? tmpListIdItem.sharedWith 
+          : [tmpListIdItem.sharedWith];
 
-      if (tmpOldAllowedEmails) {
-        const dbIdSharingEmail = this.sharingEmails().find((x) => {
-          return x.allowedEmail == tmpListIdItem?.sharedWith;
-        })?.dbId;
-        if (dbIdSharingEmail) {
-          const docSharingRef = doc(
-            this.DataBaseApp,
-            `sharingEmails${JSON.parse(localStorage.getItem('login')!).uid}`,
-            dbIdSharingEmail
-          );
-          tmpOldAllowedEmails.nameSharedLists =
-            tmpOldAllowedEmails.nameSharedLists.filter((sharedLists) => {
-              return sharedLists != tmpListIdItem!.name;
-            });
-          tmpAllowedEmails = {
-            allowedEmail: tmpListIdItem.sharedWith,
-            nameSharedLists: tmpOldAllowedEmails.nameSharedLists,
-          };
-          tmpOldAllowedEmails.nameSharedLists.length == 0
-            ? deleteDoc(docSharingRef)
-            : updateDoc(docSharingRef, { ...tmpAllowedEmails });
-        }
-      }
+      sharedWithList.forEach(email => {
+          let tmpAllowedEmails: SharingEmail;
+          let tmpOldAllowedEmails: SharingEmail | undefined | null =
+            this.sharingEmails().find((x) => x.allowedEmail == email);
+    
+          if (tmpOldAllowedEmails) {
+            const dbIdSharingEmail = tmpOldAllowedEmails.dbId;
+            if (dbIdSharingEmail) {
+              const docSharingRef = doc(
+                this.DataBaseApp,
+                `sharingEmails${JSON.parse(localStorage.getItem('login')!).uid}`,
+                dbIdSharingEmail
+              );
+              tmpOldAllowedEmails.nameSharedLists =
+                tmpOldAllowedEmails.nameSharedLists.filter((sharedLists) => {
+                  return sharedLists != tmpListIdItem!.name;
+                });
+                
+                // If it's empty, delete the doc, otherwise update
+              if(tmpOldAllowedEmails.nameSharedLists.length == 0) {
+                   deleteDoc(docSharingRef);
+              } else {
+                  // Important: preserve other fields, clean up just the name list
+                  // Actually `tmpOldAllowedEmails` is a local object modified above.
+                  // We just need to update it.
+                   updateDoc(docSharingRef, { nameSharedLists: tmpOldAllowedEmails.nameSharedLists });
+              }
+            }
+          }
+      });
+
+      const collectionKey = Array.isArray(tmpListIdItem.sharedWith) 
+          ? shajs('sha256').update(`${tmpListIdItem.sharedBy}${tmpListIdItem.name}`).digest('hex')
+          : shajs('sha256').update(`${tmpListIdItem.sharedWith}${tmpListIdItem.name}`).digest('hex');
 
       const docRef = doc(
         this.DataBaseApp,
-        `sharedListId${shajs('sha256')
-          .update(`${tmpListIdItem.sharedWith}${tmpListIdItem!.name}`)
-          .digest('hex')}`,
+        `sharedListId${collectionKey}`,
         dbId
       );
       deleteDoc(docRef);
