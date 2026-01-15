@@ -44,7 +44,8 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(
       routes,
-      withPreloading(PreloadAllModules)
+      withPreloading(PreloadAllModules),
+      withHashLocation()  
     ),
     provideAnimations(),
     provideHttpClient(withInterceptors([loaderInterceptor])),
