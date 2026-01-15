@@ -1,0 +1,11 @@
+{
+	"appId": "com.smartestapps",
+	"appName": "smartestApps",
+	"webDir": "docs",
+	"packageClassList": [
+		"AppPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"StatusBarPlugin"
+	]
+}
