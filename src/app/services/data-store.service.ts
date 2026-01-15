@@ -21,7 +21,7 @@ export interface smartestAppsState {
   login$: any; // Placeholder for login observable
   loginError: string; // Placeholder for login error observable
   afterlogin$: any; // Placeholder for after login subject
-  favoriteMealList: { dbId?: string; id: number; name: string }[];
+  favoriteMealList: (Meal | { dbId?: string; id: number; name: string })[];
   selectedMeal: Meal | null;
 }
 
@@ -77,7 +77,7 @@ export const smartestAppsStore = signalStore(
       )
     ),
     setFavoriteMealList: rxMethod<
-      { dbId?: string; id: number; name: string }[]
+      (Meal | { dbId?: string; id: number; name: string })[]
     >((MealList) =>
       MealList.pipe(
         tap((MealList) => patchState(store, { favoriteMealList: MealList }))
