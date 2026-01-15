@@ -56,6 +56,11 @@ export class MainFooterComponent implements OnInit, OnDestroy {
     // this.popupSrv.addTaskOCPopUp(false);
   }
 
+  refreshList() {
+    this.dataSrv.getTaskList();
+    this.dataSrv.getListId();
+  }
+
   createTaskModel(): TaskModel {
     return {
       listID: 0,
