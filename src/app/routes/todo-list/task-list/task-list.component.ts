@@ -36,9 +36,12 @@ export class TaskListComponent {
   @ViewChild('addInput') addInput: ElementRef | undefined;
   private readonly appStore = inject(smartestAppsStore);
   private readonly dataSrv = inject(DataService);
-
+  worstCaseLoader: any;
   constructor() {
     this.appStore.showLoader(true);
+    this.worstCaseLoader = setTimeout(() => {
+      this.appStore.showLoader(false);
+    }, 5000);
     // Sync listId from service
     effect(() => {
         this.listId.set(this.dataSrv.listId());
@@ -54,6 +57,7 @@ export class TaskListComponent {
         // Ensure service has the correct ID (if index was corrected to 0)
         // this.dataSrv.setSelectedListId(this.listId()[this.selectedListIndex()]?.id);
         this.appStore.showLoader(false);
+        clearTimeout(this.worstCaseLoader);
       }
     });
 
