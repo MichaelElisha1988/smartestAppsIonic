@@ -28,6 +28,8 @@ export class TaskComponent implements OnInit {
     }),
   });
 
+  private lastRefreshVal = 0;
+
   constructor(private readonly dataSrv: DataService) {
     effect(() => {
         this.taskList = this.dataSrv.taskList();
@@ -35,13 +37,38 @@ export class TaskComponent implements OnInit {
 
     effect(() => {
         const onChgSelection = this.dataSrv.selectedId();
-        // Sort: Not Done first, then Done
-        this.shownList = this.dataSrv.taskList()
-        .filter((x) => x.listID == onChgSelection)
-        .sort((a, b) => {
-            if (a.didIt === b.didIt) return 0;
-            return a.didIt ? 1 : -1;
-        });
+        const fullList = this.dataSrv.taskList();
+        const currentRefreshVal = this.dataSrv.refreshTrigger();
+        
+        // 1. Filter for current list
+        const freshList = fullList.filter((x) => x.listID == onChgSelection);
+
+        // 2. Check if we need to Re-Sort (Structural Change OR Explicit Refresh)
+        const isStructuralChange = 
+            this.shownList.length !== freshList.length || 
+            !this.shownList.every((t, i) => freshList.find(f => f.id === t.id));
+        
+        const isExplicitRefresh = currentRefreshVal !== this.lastRefreshVal;
+
+        // Update tracking var if changed (using untracked/outside effect isn't safe inside?) 
+        // Actually we can just update the property. Effects run in injection context but updating local prop is fine.
+        if (isExplicitRefresh) {
+             this.lastRefreshVal = currentRefreshVal;
+        }
+
+        if (isStructuralChange || isExplicitRefresh) {
+            // Full Re-Render & Sort
+            this.shownList = freshList.sort((a, b) => {
+                if (a.didIt === b.didIt) return 0;
+                return a.didIt ? 1 : -1;
+            });
+        } else {
+            // Soft Update: Update properties in place, Maintain Order
+            this.shownList = this.shownList.map(existing => {
+                const fresh = freshList.find(f => f.id === existing.id);
+                return fresh ? fresh : existing;
+            });
+        }
 
         setTimeout(() => {
         document
@@ -56,7 +83,7 @@ export class TaskComponent implements OnInit {
             }
             });
         });
-    });
+    }, { allowSignalWrites: true }); // Enable writing to lastRefreshVal if strict checking is on
   }
 
   ngOnInit(): void {}
@@ -100,7 +127,8 @@ export class TaskComponent implements OnInit {
   }
 
   deleteTask(event: any) {
-    this.dataSrv.deleteTask(event.target.attributes['taskId'].value);
+    const id = parseInt(event.target.attributes['taskId'].value, 10);
+    this.dataSrv.deleteTask(id);
   }
 
   editTaskName(event: any, task: TaskModel) {
