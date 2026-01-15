@@ -353,6 +353,79 @@
                       box-shadow: 0 0 15px var(--c-secondary-glow), inset 0 0 5px rgba(0, 240, 255, 0.1);
                   }
               }
+
+              .image-input-group {
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+
+                  input { flex: 1; }
+
+                  .suggest-btn {
+                      padding: 0 15px;
+                      height: 44px;
+                      border-radius: 12px;
+                      background: rgba(0, 0, 0, 0.3);
+                      border: 1px solid var(--ion-color-secondary);
+                      color: var(--ion-color-secondary);
+                      cursor: pointer;
+                      font-size: 0.9rem;
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      transition: 0.3s;
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      flex-shrink: 0;
+                      
+                      &:hover {
+                          background: var(--ion-color-secondary);
+                          color: black;
+                          box-shadow: 0 0 15px var(--c-secondary-glow);
+                      }
+                  }
+              }
+
+              .suggestions-container {
+                  display: flex;
+                  animation: fadeIn 0.3s ease-in-out;
+                  flex-wrap: wrap;
+                  justify-content: center;
+                  gap: 11px;
+                  min-height: 189px;
+                  position: relative;
+                  overflow-x: hidden;
+                  overflow-y: auto;
+                  
+                  .suggestion-thumb {
+                      width: 90px;
+                      height: 90px;
+                      border-radius: 12px;
+                      object-fit: cover;
+                      border: 2px solid transparent; /* default border */
+                      cursor: pointer;
+                      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* bouncy */
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                      background: #000;
+                      
+                      &:hover {
+                          border-color: var(--ion-color-secondary);
+                          transform: scale(1.1);
+                          box-shadow: 0 8px 15px var(--c-secondary-glow);
+                          z-index: 10;
+                      }
+
+                      &:active {
+                          transform: scale(0.95);
+                      }
+                  }
+              }
+
+              @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(-5px); }
+                  to { opacity: 1; transform: translateY(0); }
+              }
+
               textarea {
                   min-height: 80px;
                   resize: vertical;

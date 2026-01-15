@@ -59,10 +59,41 @@ export class RecepiesBookPage implements OnInit {
     ingredients: new FormArray([])
   });
   isAddMode = signal(false);
+  suggestedImages = signal<string[]>([]); // Store suggested image URLs
 
   // Getter for ingredients form array
   get ingredients() {
       return this.addRecipeForm.get('ingredients') as FormArray;
+  }
+
+  getSuggestions() {
+      const mealName = this.addRecipeForm.get('strMeal')?.value;
+      if (mealName && mealName.length > 2) {
+          this.dataStore.showLoader(true);
+          this.recipiesSrv.getSujestionsImages(mealName).pipe(take(1)).subscribe({
+              next: (data) => {
+                  if (data.items) {
+                      const images = data.items?.map((image: any) => image?.link.includes('.jpg') || image?.link.includes('.png') ? image?.link : null).filter((image: any) => image !== null)
+                      this.suggestedImages.set(images);
+                  } else {
+                      alert('No images found for this recipe name.');
+                      this.suggestedImages.set([]);
+                  }
+                  this.dataStore.showLoader(false);
+              },
+              error: (err) => {
+                  console.error(err);
+                  this.dataStore.showLoader(false);
+              }
+          });
+      } else {
+          alert('Please enter a recipe name first.');
+      }
+  }
+
+  selectSuggestion(url: string) {
+      this.addRecipeForm.patchValue({ strMealThumb: url });
+      this.suggestedImages.set([]); // Clear suggestions after selection
   }
 
   addIngredient() {

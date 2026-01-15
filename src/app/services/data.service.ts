@@ -335,19 +335,7 @@ export class DataService {
     this.taskList.set(tmpTaskList);
   }
 
-  async uploadImage(file: File, path: string): Promise<string> {
-    const storage = this.loginSrv.getStorageApp();
-    const storageRef = ref(storage, path);
-    
-    try {
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error) {
-        console.error('DataService: Upload failed', error);
-        throw error;
-    }
-  }
+
 
   async getSharingEmails() {
     this.initRefs();

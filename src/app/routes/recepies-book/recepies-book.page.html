@@ -13,7 +13,20 @@
                     <input type="text" formControlName="strMeal" placeholder="Recipe Name" />
                     <input type="text" formControlName="strCategory" placeholder="Category" />
                     <input type="text" formControlName="strArea" placeholder="Area" />
-                    <input type="text" formControlName="strMealThumb" placeholder="Image URL (optional)" />
+                    <div class="image-input-group">
+                        <input type="text" formControlName="strMealThumb" placeholder="Image URL (optional)" />
+                        <button type="button" class="suggest-btn" (click)="getSuggestions()" title="Get Suggestions from Title">
+                            Suggest
+                        </button>
+                    </div>
+                    
+                    @if(suggestedImages().length > 0) {
+                        <div class="suggestions-container">
+                            @for(img of suggestedImages(); track $index) {
+                                <img [src]="img" (click)="selectSuggestion(img)" class="suggestion-thumb" />
+                            }
+                        </div>
+                    }
                     <input type="text" formControlName="strYoutube" placeholder="Youtube Link (optional)" />
                     <textarea formControlName="strInstructions" placeholder="Instructions"></textarea>
                     <input type="text" formControlName="strTags" placeholder="Tags" />
