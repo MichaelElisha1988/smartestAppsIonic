@@ -7,8 +7,8 @@
       <div class="line rotate"></div>
     </div>
     } @else {
-    <form (submit)="openAddTask()" [formGroup]="taskform">
-      <input type="text" formControlName="title" />
+    <form (submit)="openAddTask()" [formGroup]="taskform" class="form-wrapper">
+      <textarea rows="1" formControlName="title" [maxLength]="100" (input)="autoGrow($event)"></textarea>
       <button class="add-btn" type="submit">
         {{ taskform.controls.title.value ? "Add" : "close" }}
       </button>
