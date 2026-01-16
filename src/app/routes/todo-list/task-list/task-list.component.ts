@@ -14,6 +14,7 @@ import { ListId } from 'src/app/models/list-id.model';
 import { DataService } from 'src/app/services/data.service';
 import { smartestAppsStore } from 'src/app/services/data-store.service';
 
+
 @Component({
   selector: 'task-list',
   templateUrl: './task-list.component.html',
@@ -29,6 +30,10 @@ export class TaskListComponent {
   movearound = signal(0);
   showSharedList = signal(false);
   isShareBoxVisible = signal(false);
+  showSharedUsers = signal(false);
+  showListActions = signal(false);
+  recentSharedUsers = signal<string[]>([]);
+  
   shareWithEmail = new FormControl<string>('', [
     Validators.required,
   ]);
@@ -39,6 +44,13 @@ export class TaskListComponent {
   worstCaseLoader: any;
   constructor() {
     this.appStore.showLoader(true);
+    
+    // Load recent shared users
+    const cachedUsers = localStorage.getItem('recentSharedUsers');
+    if (cachedUsers) {
+        this.recentSharedUsers.set(JSON.parse(cachedUsers));
+    }
+
     this.worstCaseLoader = setTimeout(() => {
       this.appStore.showLoader(false);
     }, 5000);
@@ -134,9 +146,10 @@ export class TaskListComponent {
 
   updateListName(event: any, list: ListId) {
     if (list.name != event.target.value && event.target.value != '') {
+      const oldName = list.name;
       list.name = event.target.value;
       this.listEdit.set(false);
-      this.dataSrv.updateListData(list);
+      this.dataSrv.updateListData(list, oldName);
     } else {
       this.listEdit.set(false);
     }
@@ -173,6 +186,13 @@ export class TaskListComponent {
             listId,
             emails
           );
+          
+          // Cache new emails
+          const currentRecent = this.recentSharedUsers();
+          const updatedRecent = [...new Set([...currentRecent, ...emails])];
+          localStorage.setItem('recentSharedUsers', JSON.stringify(updatedRecent));
+          this.recentSharedUsers.set(updatedRecent);
+
           this.shareWithEmail.setValue('');
       } else {
           alert('Please enter at least one valid email');
@@ -182,6 +202,14 @@ export class TaskListComponent {
       alert('Cannot share with these emails');
     }
   }
+
+  addEmailFromSuggestion(email: string) {
+      const currentVal = this.shareWithEmail.value || '';
+      // Add comma if needed
+      const separator = currentVal.trim().length > 0 && !currentVal.trim().endsWith(',') ? ', ' : '';
+      this.shareWithEmail.setValue(currentVal + separator + email);
+  }
+
   fordev() {
     this.dataSrv.fordev();
   }

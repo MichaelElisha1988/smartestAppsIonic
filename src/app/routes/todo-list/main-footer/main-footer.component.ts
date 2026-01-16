@@ -97,4 +97,10 @@ export class MainFooterComponent implements OnInit {
 
     return newTask;
   }
+
+  autoGrow(event: any) {
+    const el = event.target;
+    el.style.height = 'auto'; // Reset height
+    el.style.height = (el.scrollHeight) + 'px'; // Set to scrollHeight
+  }
 }

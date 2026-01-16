@@ -157,6 +157,7 @@ export class DataService {
                   tmpListId.push({
                     ...(data.data() as ListId),
                     dbId: data.id,
+                    firebaseCollectionKey: collectionKey
                   });
                 }
               });
@@ -192,7 +193,11 @@ export class DataService {
         return getDocs(this.sharedListIdRef!).then((data) => {
           data.docs.forEach((data) => {
              if (!tmpListId.find((x) => x.id === (data.data() as ListId).id)) {
-                tmpListId.push({ ...(data.data() as ListId), dbId: data.id });
+                tmpListId.push({ 
+                    ...(data.data() as ListId), 
+                    dbId: data.id,
+                    firebaseCollectionKey: collectionKey
+                });
              }
           });
         });
@@ -795,8 +800,70 @@ export class DataService {
     }
   }
 
-  // Method to update List Item (Rename, etc.)
-  async updateListData(list: ListId) {
+  // --- TASK TEMPLATES (LocalStorage) ---
+
+  getTemplates(): any[] {
+      const stored = localStorage.getItem('taskTemplates');
+      return stored ? JSON.parse(stored) : [];
+  }
+
+  saveTemplate(name: string, tasks: string[]) {
+      const templates = this.getTemplates();
+      const newTemplate = {
+          id: new Date().getTime().toString(),
+          name: name,
+          tasks: tasks
+      };
+      templates.push(newTemplate);
+      localStorage.setItem('taskTemplates', JSON.stringify(templates));
+  }
+
+  deleteTemplate(id: string) {
+      const templates = this.getTemplates().filter((t: any) => t.id !== id);
+      localStorage.setItem('taskTemplates', JSON.stringify(templates));
+  }
+
+  updateTemplate(updatedTemplate: any) {
+      const templates = this.getTemplates();
+      const index = templates.findIndex((t: any) => t.id === updatedTemplate.id);
+      if (index !== -1) {
+          templates[index] = updatedTemplate;
+          localStorage.setItem('taskTemplates', JSON.stringify(templates));
+      }
+  }
+
+  loadTemplateIntoList(templateId: string, targetListId: number) {
+      const templates = this.getTemplates();
+      const template = templates.find((t: any) => t.id === templateId);
+      
+      if (template && template.tasks) {
+          template.tasks.forEach((taskTitle: string) => {
+              const newTask: TaskModel = {
+                listID: targetListId,
+                id: new Date().valueOf() + Math.random(), // Ensure unique ID
+                task: taskTitle,
+                author: this.getLoginName(),
+                date: this.getDateString(),
+                status: "don't you forget",
+                currentStatus: 1,
+                editMode: false,
+                seeInfo: false,
+                color: Math.floor(Math.random() * 16777215).toString(16),
+                isCheckBox: true,
+                didIt: false,
+              };
+              
+              // Add to local state immediately
+              this.taskList.update(prev => [...prev, newTask]);
+              
+              // Save to DB (Fire and forget individual saves)
+              this.updateTaskData(newTask); 
+          });
+      }
+  }
+
+
+  async updateListData(list: ListId, oldName?: string) {
     this.initRefs();
     if (list.dbId) {
       if (!list.isShared) {
@@ -807,9 +874,32 @@ export class DataService {
         );
         await updateDoc(docRef, { ...list });
       } else {
-        const collectionKey = shajs('sha256')
-          .update(`${list.sharedBy}${list.name}`)
+        const nameForHash = oldName || list.name;
+        // Fallback: If sharedBy is missing, use current user email
+        const sharedBy = list.sharedBy || JSON.parse(localStorage.getItem('login')!).email;
+
+        const computedKey = shajs('sha256')
+          .update(`${sharedBy}${nameForHash}`)
           .digest('hex');
+          
+        // CRITICAL FIX: Prefer the original key stored at load time
+        const collectionKey = list.firebaseCollectionKey || computedKey;
+        
+        console.log('UpdateListData: Updating Shared List. Key:', collectionKey);
+
+        this.sharedListIdRef = collection(
+          this.DataBaseApp,
+          `sharedListId${collectionKey}`
+        );
+        
+        const docRef = doc(
+            this.DataBaseApp,
+            `sharedListId${collectionKey}`,
+            list.dbId
+        );
+        
+        await updateDoc(docRef, { ...list, firebaseCollectionKey: collectionKey })
+           .catch(e => console.error('UpdateListData: Failed to update shared list', e));
       }
     }
     await this.getListId();

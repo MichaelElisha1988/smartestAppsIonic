@@ -118,14 +118,17 @@
           text-shadow: 1px 1px 1px var(--c-silver);
         }
 
-        input {
-          border-radius: 30px;
+        input, textarea {
+          border-radius: 15px;
           background-color: transparent;
           width: 250px;
-          height: 30px;
-          padding-left: 15px;
-          padding-right: 15px;
+          height: auto;
+          min-height: 40px;
+          padding: 10px 15px;
           transition: 0.3s all ease-in-out;
+          border: 1px solid var(--c-dark-blue);
+          resize: vertical;
+          font-family: inherit;
 
           &:focus ~ label,
           &:not(:placeholder-shown) ~ label {
@@ -134,11 +137,20 @@
             top: -8px;
             color: var(--c-dark-blue);
             font-weight: 600;
+            background: var(--c-silver);
+            padding: 0 5px;
           }
+        }
+        input {
+            height: 40px;
+            border-radius: 30px;
+        }
+        textarea {
+             border-radius: 15px;
         }
         .error {
           position: absolute;
-          bottom: -15px;
+          bottom: -20px;
           color: var(--c-dark-blue);
           font-size: 12px;
           font-weight: 600;

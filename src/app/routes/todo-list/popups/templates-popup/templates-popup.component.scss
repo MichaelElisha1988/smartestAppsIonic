@@ -1,0 +1,317 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.popup-container {
+  width: 100%;
+  max-width: 400px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--ion-color-secondary);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      color: var(--ion-color-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 1.1rem;
+      text-shadow: 0 0 5px var(--c-secondary-glow);
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--c-silver);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1.1rem;
+      
+      &:hover { color: #fff; }
+    }
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    /* Scrollbar */
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background: var(--ion-color-secondary); border-radius: 2px; }
+
+    .create-btn {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px dashed var(--ion-color-secondary);
+      color: var(--ion-color-secondary);
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      
+      &:hover {
+        background: var(--ion-color-secondary);
+        color: black;
+        box-shadow: 0 0 15px var(--c-secondary-glow);
+        border-style: solid;
+      }
+    }
+
+    .save-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+
+      input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: rgba(0,0,0,0.3);
+        color: white;
+        outline: none;
+        
+        &:focus { border-color: var(--ion-color-secondary); }
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        
+        button {
+          flex: 1;
+          padding: 8px;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          font-weight: 600;
+          
+          &.cancel-btn { background: rgba(255,255,255,0.1); color: #fff; }
+          &.save-btn { background: var(--ion-color-secondary); color: #000; }
+        }
+      }
+    }
+
+    .templates-list {
+       display: flex;
+       flex-direction: column;
+       gap: 10px;
+
+       .empty-msg {
+         text-align: center;
+         color: var(--c-silver);
+         font-style: italic;
+         margin-top: 10px;
+       }
+
+       .template-item {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         background: rgba(255,255,255,0.05);
+         padding: 12px;
+         border-radius: 12px;
+         border: 1px solid transparent;
+         transition: 0.3s;
+         flex-wrap: wrap; /* Allow wrapping for edit mode */
+         
+         &.editing {
+             background: rgba(0, 240, 255, 0.05);
+             border-color: rgba(0, 240, 255, 0.3);
+         }
+
+         &:hover:not(.editing) {
+           border-color: var(--glass-border);
+           background: rgba(255,255,255,0.08);
+         }
+
+         .info {
+           display: flex;
+           flex-direction: column;
+           
+           .name { font-weight: 700; color: white; font-size: 0.95rem; }
+           .count { font-size: 0.75rem; color: var(--c-silver); }
+         }
+
+         .item-actions {
+           display: flex;
+           gap: 8px;
+           
+           .load-btn {
+             padding: 6px 12px;
+             border-radius: 8px;
+             border: 1px solid var(--ion-color-secondary);
+             background: transparent;
+             color: var(--ion-color-secondary);
+             font-size: 0.8rem;
+             cursor: pointer;
+             font-weight: 600;
+             
+             &:hover {
+               background: var(--ion-color-secondary);
+               color: black;
+             }
+           }
+           
+           .edit-btn {
+             padding: 6px 12px;
+             border-radius: 8px;
+             border: 1px solid rgba(255,255,255,0.3);
+             background: transparent;
+             color: #fff;
+             font-size: 0.8rem;
+             cursor: pointer;
+             
+             &:hover {
+                 background: rgba(255,255,255,0.1);
+                 border-color: #fff;
+             }
+           }
+
+           .delete-btn {
+             background: transparent;
+             border: none;
+             cursor: pointer;
+             opacity: 0.7;
+             font-size: 0.8rem;
+             color: var(--c-silver);
+             &:hover { opacity: 1; transform: scale(1.05); color: #ff4d4d; }
+           }
+         }
+
+         /* EDIT MODE STYLES */
+         .edit-container {
+             width: 100%;
+             display: flex;
+             flex-direction: column;
+             gap: 10px;
+             animation: fadeIn 0.3s ease;
+             
+             .edit-name-input {
+                 width: 100%;
+                 padding: 8px;
+                 background: rgba(0,0,0,0.3);
+                 border: 1px solid var(--ion-color-secondary);
+                 border-radius: 6px;
+                 color: white;
+                 font-weight: 700;
+             }
+             
+             .edit-tasks-list {
+                 display: flex;
+                 flex-direction: column;
+                 gap: 5px;
+                 max-height: 200px;
+                 overflow-y: auto;
+                 padding: 5px;
+                 border: 1px dashed rgba(255,255,255,0.1);
+                 border-radius: 6px;
+                 
+                 /* Scrollbar */
+                 &::-webkit-scrollbar { width: 4px; }
+                 &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+                 .edit-task-row {
+                     display: flex;
+                     gap: 5px;
+                     align-items: center;
+                     
+                     input {
+                         flex: 1;
+                         background: transparent;
+                         border: none;
+                         border-bottom: 1px solid rgba(255,255,255,0.1);
+                         color: var(--c-silver);
+                         padding: 4px;
+                         font-size: 0.9rem;
+                         
+                         &:focus {
+                             border-color: var(--ion-color-secondary);
+                             color: white;
+                             outline: none;
+                         }
+                     }
+                     
+                     .remove-task-btn {
+                         background: transparent;
+                         border: none;
+                         color: #ff4d4d;
+                         cursor: pointer;
+                         font-weight: 700;
+                         opacity: 0.6;
+                         
+                         &:hover { opacity: 1; transform: scale(1.2); }
+                     }
+                 }
+                 
+                 .add-task-btn {
+                     margin-top: 5px;
+                     background: transparent;
+                     border: 1px dashed rgba(255,255,255,0.3);
+                     color: var(--c-silver);
+                     padding: 5px;
+                     border-radius: 6px;
+                     cursor: pointer;
+                     font-size: 0.8rem;
+                     
+                     &:hover {
+                         border-color: var(--ion-color-secondary);
+                         color: var(--ion-color-secondary);
+                     }
+                 }
+             }
+             
+             .edit-actions {
+                 display: flex;
+                 gap: 10px;
+                 margin-top: 5px;
+                 
+                  button {
+                   flex: 1;
+                   padding: 8px;
+                   border-radius: 8px;
+                   border: none;
+                   cursor: pointer;
+                   font-weight: 600;
+                   
+                   &.cancel-btn { background: rgba(255,255,255,0.1); color: #fff; }
+                   &.save-btn { background: var(--ion-color-secondary); color: #000; }
+                 }
+             }
+         }
+       }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

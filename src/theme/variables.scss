@@ -39,3 +39,115 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: 12px;
 }
+
+/* Bright Theme (Pink Neon) */
+body.theme-bright {
+  --ion-color-primary: #ff00de; /* Hot Pink */
+  --ion-color-primary-rgb: 255, 0, 222;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-secondary: #00b8d4; /* Darker Cyan for readability */
+  --ion-color-secondary-rgb: 0, 184, 212;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-tertiary: #7000ff; /* Purple */
+  --ion-color-tertiary-rgb: 112, 0, 255;
+
+  --ion-background-color: #fff0fc; /* Very light pinkish white */
+  --ion-background-color-rgb: 255, 240, 252;
+  --ion-text-color: #2a0a25; /* Dark purple text */
+  --ion-text-color-rgb: 42, 10, 37;
+
+  --c-dark-bg: #ffffff;
+  --c-surface: #ffdbf7;
+  --c-primary-glow: rgba(255, 0, 222, 0.4);
+  --c-secondary-glow: rgba(0, 229, 255, 0.4);
+
+  --glass-bg: rgba(255, 255, 255, 0.85); /* Light glass */
+  --glass-border: rgba(255, 0, 222, 0.2); /* Pinkish border */
+}
+
+/* Ocean Theme (Deep Blue) */
+body.theme-ocean {
+  --ion-color-primary: #0057ff;
+  --ion-color-primary-rgb: 0, 87, 255;
+  
+  --ion-color-secondary: #00e5ff;
+  --ion-color-secondary-rgb: 0, 229, 255;
+
+  --ion-color-tertiary: #0091ea;
+  --ion-color-tertiary-rgb: 0, 145, 234;
+
+  --ion-background-color: #001e3c;
+  --ion-background-color-rgb: 0, 30, 60;
+  --ion-text-color: #e3f2fd;
+  --ion-text-color-rgb: 227, 242, 253;
+
+  --c-dark-bg: #0a1929;
+  --c-surface: #0f2540;
+  --c-primary-glow: rgba(0, 87, 255, 0.5);
+  --c-secondary-glow: rgba(0, 229, 255, 0.5);
+
+  --glass-bg: rgba(10, 25, 41, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.15);
+}
+
+/* Capuchino Late (Warm Coffee) */
+body.theme-capuchino {
+  --ion-color-primary: #6f4e37; /* Coffee Bean */
+  --ion-color-primary-rgb: 111, 78, 55;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-secondary: #d2691e; /* Caramel */
+  --ion-color-secondary-rgb: 210, 105, 30;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-tertiary: #a0522d; /* Sienna */
+  --ion-color-tertiary-rgb: 160, 82, 45;
+
+  --ion-background-color: #fff8e7; /* Latte foam */
+  --ion-background-color-rgb: 255, 248, 231;
+  --ion-text-color: #3e2723; /* Dark Espresso text */
+  --ion-text-color-rgb: 62, 39, 35;
+
+  --c-dark-bg: #fff0db;
+  --c-surface: #faebd7;
+  --c-primary-glow: rgba(111, 78, 55, 0.3);
+  --c-secondary-glow: rgba(210, 105, 30, 0.3);
+
+  --glass-bg: rgba(255, 248, 231, 0.85);
+  --glass-border: rgba(111, 78, 55, 0.2);
+}
+
+/* SmartestAppes (Mind Blowing - Gold & Obsidian) */
+body.theme-smartest {
+  --ion-color-primary: #ffd700; /* Gold */
+  --ion-color-primary-rgb: 255, 215, 0;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+
+  --ion-color-secondary: #00ffff; /* Electric Cyan for pop */
+  --ion-color-secondary-rgb: 0, 255, 255;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+
+  --ion-color-tertiary: #ff00ff; /* Magenta */
+  --ion-color-tertiary-rgb: 255, 0, 255;
+
+  --ion-background-color: #000000; /* Pure Black */
+  --ion-background-color-rgb: 0, 0, 0;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --c-dark-bg: #050505;
+  --c-surface: #0a0a0a;
+  --c-primary-glow: rgba(255, 215, 0, 0.6); /* Strong Gold Glow */
+  --c-secondary-glow: rgba(0, 255, 255, 0.6); /* Strong Cyan Glow */
+
+  --glass-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: rgba(255, 215, 0, 0.3); /* Gold Border */
+}

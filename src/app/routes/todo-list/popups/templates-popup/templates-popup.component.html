@@ -1,0 +1,63 @@
+<div class="overlay" (click)="close.emit()">
+    <div class="popup-container" (click)="$event.stopPropagation()">
+        <div class="header">
+            <h3>Task Templates</h3>
+            <button class="close-btn" (click)="close.emit()">X</button>
+        </div>
+
+        <div class="content">
+            @if(!showSaveInput()) {
+                <button class="create-btn" (click)="toggleSaveMode()">
+                    + Save Current List as Template
+                </button>
+            } @else {
+                <div class="save-form">
+                    <input type="text" [ngModel]="newTemplateName()" (ngModelChange)="newTemplateName.set($event)" placeholder="Template Name (e.g., Grocery)" />
+                    <div class="actions">
+                        <button class="cancel-btn" (click)="toggleSaveMode()">Cancel</button>
+                        <button class="save-btn" (click)="saveCurrentList()">Save</button>
+                    </div>
+                </div>
+            }
+
+            <div class="templates-list">
+                @for(template of templates(); track template.id) {
+                    <div class="template-item" [class.editing]="editingTemplateId() === template.id">
+                        @if(editingTemplateId() !== template.id) {
+                            <div class="info">
+                                <span class="name">{{ template.name }}</span>
+                                <span class="count">{{ template.tasks.length }} tasks</span>
+                            </div>
+                            <div class="item-actions">
+                                <button class="load-btn" (click)="loadTemplate(template.id)">Load</button>
+                                <button class="edit-btn" (click)="startEditing(template)">Edit</button>
+                                <button class="delete-btn" (click)="deleteTemplate(template.id)">Delete</button>
+                            </div>
+                        } @else {
+                            <div class="edit-container">
+                                <input type="text" [value]="editingName()" (input)="editingName.set($any($event.target).value)" class="edit-name-input" placeholder="Template Name" />
+                                
+                                <div class="edit-tasks-list">
+                                    @for(task of editingTasks(); track $index) {
+                                        <div class="edit-task-row">
+                                            <input type="text" [value]="task" (blur)="updateTaskInEdit($index, $event)" />
+                                            <button class="remove-task-btn" (click)="removeTaskFromEdit($index)">X</button>
+                                        </div>
+                                    }
+                                    <button class="add-task-btn" (click)="addTaskToEdit()">+ Add Task</button>
+                                </div>
+
+                                <div class="edit-actions">
+                                    <button class="cancel-btn" (click)="cancelEditing()">Cancel</button>
+                                    <button class="save-btn" (click)="saveEditing()">Save Changes</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                } @empty {
+                    <p class="empty-msg">No templates saved yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

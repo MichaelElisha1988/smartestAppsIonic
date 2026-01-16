@@ -1,3 +1,11 @@
+<div class="templates-header">
+    <button class="load-btn" (click)="showTemplatesPopup.set(true)">Load Template</button>
+</div>
+
+@if(showTemplatesPopup()) {
+    <app-templates-popup (close)="showTemplatesPopup.set(false)"></app-templates-popup>
+}
+
 <section
   *ngFor="let task of shownList; let i = index"
   class="task extend {{ task.id }}"
@@ -19,10 +27,13 @@
       <div
         class="task-item"
         (click)="!task.editMode ? editTaskName($event, task) : ''"
+        [ngClass]="{
+          'rtl': isHebrew(task.task)
+        }"
       >
         <span
           class="task-name"
-          [ngClass]="task.currentStatus == 3 ? 'overline' : ''"
+          [ngClass]="{'overline': task.currentStatus == 3}"
           *ngIf="!task.editMode; else editTaskInput"
           >{{ task.task }}</span
         >
@@ -30,6 +41,7 @@
           <textarea
             type="text"
             class="edit task-name"
+            [class.rtl]="isHebrew(task.task)"
             [value]="task.task"
             (blur)="subbmitChange($event, task)"
           ></textarea>

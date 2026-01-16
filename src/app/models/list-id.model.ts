@@ -8,4 +8,5 @@ export interface ListId {
   isShared: boolean;
   sharedWith: any;
   sharedBy: string;
+  firebaseCollectionKey?: string;
 }

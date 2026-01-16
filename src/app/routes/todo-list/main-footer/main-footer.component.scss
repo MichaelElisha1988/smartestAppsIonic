@@ -3,9 +3,10 @@
   align-items: center;
   justify-content: center;
   background-color: var(--c-surface);
-  height: 60px;
+  height: auto;
+  min-height: 60px;
   position: fixed;
-  bottom: 0;
+  bottom: 40px; /* Sit on top of global footer */
   z-index: 999; /* High Z-Index to stay on top */
   width: 100%;
   pointer-events: none;
@@ -62,11 +63,19 @@
       border: 1px solid var(--ion-color-secondary);
       box-shadow: 0 0 25px var(--c-secondary-glow);
 
+      .form-wrapper{
+        display: flex;
+        flex-direction: row;
+        align-items: center;  
+        justify-content: center;
+        gap: 10px;
+      }
+
       .line {
         display: none;
       }
 
-      input {
+      textarea {
         font-size: 1rem;
         padding: 8px 12px;
         background: rgba(255, 255, 255, 0.05);
@@ -75,6 +84,9 @@
         outline: none;
         color: var(--ion-text-color);
         width: 200px;
+        min-height: 40px;
+        resize: none;
+        overflow: hidden;
         
         &:focus {
           box-shadow: 0 0 10px var(--c-secondary-glow);
