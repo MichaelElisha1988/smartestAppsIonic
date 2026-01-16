@@ -19,10 +19,13 @@
       <div
         class="task-item"
         (click)="!task.editMode ? editTaskName($event, task) : ''"
+        [ngClass]="{
+          'rtl': isHebrew(task.task)
+        }"
       >
         <span
           class="task-name"
-          [ngClass]="task.currentStatus == 3 ? 'overline' : ''"
+          [ngClass]="{'overline': task.currentStatus == 3}"
           *ngIf="!task.editMode; else editTaskInput"
           >{{ task.task }}</span
         >
@@ -30,6 +33,7 @@
           <textarea
             type="text"
             class="edit task-name"
+            [class.rtl]="isHebrew(task.task)"
             [value]="task.task"
             (blur)="subbmitChange($event, task)"
           ></textarea>

@@ -156,4 +156,8 @@ export class TaskComponent implements OnInit {
       task.editMode = false;
     }
   }
+
+  isHebrew(text: string): boolean {
+    return /[\u0590-\u05FF]/.test(text);
+  }
 }
