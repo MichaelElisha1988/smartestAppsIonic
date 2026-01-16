@@ -29,7 +29,7 @@ export class HeaderComponent {
 
   widgetHidden: boolean = false;
   widgetBtnStyle: 'standard' | 'highlight' | 'neon' = 'standard';
-  appTheme: 'neon' | 'bright' | 'ocean' | 'capuchino' | 'smartest' = 'neon';
+  appTheme: 'neon' | 'bright' | 'ocean' | 'capuchino' | 'smartest' | 'heavy-metal' | 'borderlands' = 'neon';
 
   constructor() {}
 
@@ -45,7 +45,7 @@ export class HeaderComponent {
 
     // Restore App Theme
     const savedTheme = localStorage.getItem('appTheme');
-    if (savedTheme && ['neon', 'bright', 'ocean', 'capuchino', 'smartest'].includes(savedTheme)) {
+    if (savedTheme && ['neon', 'bright', 'ocean', 'capuchino', 'smartest', 'heavy-metal', 'borderlands'].includes(savedTheme)) {
         this.appTheme = savedTheme as any;
     }
     this.applyTheme();
@@ -70,7 +70,8 @@ export class HeaderComponent {
   }
 
   cycleAppTheme() {
-      const themes: ('neon' | 'bright' | 'ocean' | 'capuchino' | 'smartest')[] = ['neon', 'bright', 'ocean', 'capuchino', 'smartest'];
+      const themes: ('neon' | 'bright' | 'ocean' | 'capuchino' | 'smartest' | 'heavy-metal' | 'borderlands')[] = 
+          ['neon', 'bright', 'ocean', 'capuchino', 'smartest', 'heavy-metal', 'borderlands'];
       const currentIndex = themes.indexOf(this.appTheme);
       const nextIndex = (currentIndex + 1) % themes.length;
       this.appTheme = themes[nextIndex];
@@ -80,7 +81,7 @@ export class HeaderComponent {
 
   applyTheme() {
       // Remove all theme classes first
-      document.body.classList.remove('theme-bright', 'theme-ocean', 'theme-capuchino', 'theme-smartest');
+      document.body.classList.remove('theme-bright', 'theme-ocean', 'theme-capuchino', 'theme-smartest', 'theme-heavy-metal', 'theme-borderlands');
       
       // Add the active theme class (except for default 'neon')
       if (this.appTheme === 'bright') {
@@ -91,6 +92,10 @@ export class HeaderComponent {
           document.body.classList.add('theme-capuchino');
       } else if (this.appTheme === 'smartest') {
           document.body.classList.add('theme-smartest');
+      } else if (this.appTheme === 'heavy-metal') {
+          document.body.classList.add('theme-heavy-metal');
+      } else if (this.appTheme === 'borderlands') {
+          document.body.classList.add('theme-borderlands');
       }
   }
 

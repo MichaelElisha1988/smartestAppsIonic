@@ -151,3 +151,64 @@ body.theme-smartest {
   --glass-bg: rgba(20, 20, 20, 0.8);
   --glass-border: rgba(255, 215, 0, 0.3); /* Gold Border */
 }
+
+/* Heavy Metal Theme (Industrial & Aggressive) */
+body.theme-heavy-metal {
+  --ion-color-primary: #555555; /* Gunmetal */
+  --ion-color-primary-rgb: 85, 85, 85;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-secondary: #d32f2f; /* Blood Rust Red */
+  --ion-color-secondary-rgb: 211, 47, 47;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-tertiary: #b0bec5; /* Steel */
+  --ion-color-tertiary-rgb: 176, 190, 197;
+
+  --ion-background-color: #121212; /* Deep Matte Black */
+  --ion-background-color-rgb: 18, 18, 18;
+  --ion-text-color: #e0e0e0; /* Off-white */
+  --ion-text-color-rgb: 224, 224, 224;
+
+  --c-dark-bg: #1e1e1e;
+  --c-surface: #262626;
+  --c-primary-glow: rgba(255, 0, 0, 0.2);
+  --c-secondary-glow: rgba(211, 47, 47, 0.4);
+
+  --glass-bg: rgba(30, 30, 30, 0.9);
+  --glass-border: rgba(100, 100, 100, 0.3);
+}
+
+/* Borderlands Theme (Cell-Shaded/Wasteland) */
+body.theme-borderlands {
+  --ion-color-primary: #f57f17; /* Vault Hunter Orange */
+  --ion-color-primary-rgb: 245, 127, 23;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+
+  --ion-color-secondary: #00bcd4; /* Shield Blue */
+  --ion-color-secondary-rgb: 0, 188, 212;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+
+  --ion-color-tertiary: #8bc34a; /* Corrosive Green */
+  --ion-color-tertiary-rgb: 139, 195, 74;
+
+  --ion-background-color: #2b2b2b; /* Sketchy Dark Gray */
+  --ion-background-color-rgb: 43, 43, 43;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --c-dark-bg: #212121;
+  --c-surface: #333333;
+  --c-primary-glow: rgba(245, 127, 23, 0.5); /* Dirty Glow */
+  --c-secondary-glow: rgba(0, 188, 212, 0.5);
+
+  --glass-bg: rgba(0, 0, 0, 0.85); /* High contrast backing */
+  --glass-border: #000000; /* Thick black border simulation */
+  
+  /* Override global border style for that cel-shaded look */
+  --glass-blur: 0px; /* Sharp edges */
+}

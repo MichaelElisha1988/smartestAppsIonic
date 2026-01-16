@@ -204,10 +204,26 @@ export class TaskListComponent {
   }
 
   addEmailFromSuggestion(email: string) {
-      const currentVal = this.shareWithEmail.value || '';
-      // Add comma if needed
-      const separator = currentVal.trim().length > 0 && !currentVal.trim().endsWith(',') ? ', ' : '';
-      this.shareWithEmail.setValue(currentVal + separator + email);
+      let currentVal = this.shareWithEmail.value || '';
+      
+      // Parse existing emails
+      let existingEmails = currentVal.split(',')
+          .map(e => e.trim())
+          .filter(e => e.length > 0);
+      
+      const emailLower = email.toLowerCase();
+      const index = existingEmails.findIndex(e => e.toLowerCase() === emailLower);
+
+      if (index !== -1) {
+          // Remove if exists
+          existingEmails.splice(index, 1);
+      } else {
+          // Add if not exists
+          existingEmails.push(email);
+      }
+      
+      // Reconstruct string
+      this.shareWithEmail.setValue(existingEmails.join(', '));
   }
 
   fordev() {
