@@ -70,6 +70,43 @@
           </div>
         }
       }
+      @if(!showSharedList()){
+      <div class="share-toggle-wrapper">
+        <button class="toggle-share-btn" (click)="isShareBoxVisible.set(!isShareBoxVisible())">
+          {{ isShareBoxVisible() ? 'Hide Share Options' : 'Share List' }}
+        </button>
+      </div>
+
+      @if(isShareBoxVisible()) {
+      <div class="share-list box">
+        <input
+          [formControl]="shareWithEmail"
+          type="email"
+          placeholder="Share with emails (comma separated)"
+        />
+        
+        @if(recentSharedUsers().length > 0) {
+          <div class="suggestions-container">
+            <div class="suggestion-label">Recent:</div>
+            <div class="suggestion-chips">
+              @for(user of recentSharedUsers(); track $index) {
+                <span class="chip suggestion-chip" (click)="addEmailFromSuggestion(user)">
+                  {{ user }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+        <button
+          class="share-list"
+          [disabled]="!shareWithEmail.valid"
+          (click)="shareList()"
+        >
+          Share Selected Task List
+        </button>
+      </div>
+      }
+      }
     </div>
   </div>
 
@@ -78,45 +115,9 @@
       {{ "→" }}
     </button>
   </div> -->
-  @if(!showSharedList()){
-  <div class="share-toggle-wrapper">
-    <button class="toggle-share-btn" (click)="isShareBoxVisible.set(!isShareBoxVisible())">
-      {{ isShareBoxVisible() ? 'Hide Share Options' : 'Share List' }}
-    </button>
 
-  </div>
-
-  @if(isShareBoxVisible()) {
-  <div class="share-list box">
-    <input
-      [formControl]="shareWithEmail"
-      type="email"
-      placeholder="Share with emails (comma separated)"
-    />
-    
-    @if(recentSharedUsers().length > 0) {
-      <div class="suggestions-container">
-        <div class="suggestion-label">Recent:</div>
-        <div class="suggestion-chips">
-          @for(user of recentSharedUsers(); track $index) {
-            <span class="chip suggestion-chip" (click)="addEmailFromSuggestion(user)">
-              {{ user }}
-            </span>
-          }
-        </div>
-      </div>
-    }
-    <button
-      class="share-list"
-      [disabled]="!shareWithEmail.valid"
-      (click)="shareList()"
-    >
-      Share Selected Task List
-    </button>
-  </div>
-  }
-  }
 </div>
 <task class="tasks"></task>
+<div class="list-spacer" style="height: 180px; width: 100%;"></div>
 <!-- <button (click)="fordev()">For Dev></button> -->
 

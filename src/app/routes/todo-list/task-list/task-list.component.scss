@@ -103,6 +103,8 @@
         max-height: 800px; /* Increased to accommodate shared lists and details */
         opacity: 1;
         margin-top: 5px;
+        width: 90vw; /* Ensure it takes reasonable width on mobile */
+        max-width: 500px;
       }
     }
 
@@ -111,6 +113,10 @@
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
+        width: 100%;
+        margin-bottom: 20px;
+        border-bottom: 1px dashed rgba(var(--ion-color-secondary-rgb), 0.3);
+        padding-bottom: 15px;
     }
 
     .add-list-input {
@@ -167,8 +173,7 @@
     justify-content: space-between;
     top: 0;
     z-index: 2;
-    pointer-events: none; /* Let clicks pass through if just visual hints */
-    /* Implementation details for arrows... */
+    pointer-events: none;
   }
 
   .shared-users-toggle-btn {
@@ -197,7 +202,7 @@
     opacity: 0;
 
     &.expanded {
-      max-height: 500px; /* Arbitrary large enough height */
+      max-height: 500px;
       opacity: 1;
       border-top: 1px dashed rgba(var(--ion-color-primary-rgb), 0.3);
       margin-top: 10px;
@@ -244,7 +249,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-top: 10px;
   }
 
   .toggle-share-btn {
@@ -271,16 +276,15 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 15px; /* Reduced padding */
-      margin: 10px 0; /* Reduced margin */
+      padding: 15px;
+      margin: 10px 0;
       border-radius: 20px;
-      gap: 12px; /* Reduced gap */
-      background: var(--glass-bg);
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.05); /* Slightly clearer bg since it is nested */
       backdrop-filter: blur(16px);
-      box-shadow: 0 5px 20px rgba(0,0,0,0.5); /* Reduced shadow scale slightly */
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2); 
       transition: 0.3s all;
-      width: 90%; /* Limit width to ensure it's not too wide */
-      max-width: 400px; /* Max width */
+      width: 100%; /* Fit parent */
       margin-left: auto;
       margin-right: auto;
       
@@ -397,12 +401,13 @@
         pointer-events: none;
       }
     }
-  }
+  /* End of .scroll-bar */
 }
+
 .tasks {
-  padding: 0 0 100px 0;
   display: flex;
   flex-direction: column;
+  padding-bottom: 150px;
 }
 
 ::-webkit-scrollbar {
@@ -415,4 +420,5 @@
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
 }
