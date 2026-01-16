@@ -97,6 +97,11 @@
         color: var(--ion-text-color);
         font-weight: 500;
 
+        &.rtl{
+          text-align: right;
+          direction: rtl;
+        }
+
         .task-name {
           &.overline {
             text-decoration: line-through;
