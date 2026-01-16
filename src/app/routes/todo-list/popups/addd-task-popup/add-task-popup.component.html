@@ -4,13 +4,14 @@
     <div class="title">Add task to your list from here:</div>
     <form (submit)="addTask($event)" [formGroup]="taskform">
       <div class="input-div">
-        <input
+        <textarea
           placeholder=" "
           type="text"
           id="task"
           name="task"
           formControlName="task"
-        />
+          rows="3"
+        ></textarea>
         <label for="task">task</label>
         @if(taskform.controls['task'].errors &&
         taskform.controls['task'].touched){

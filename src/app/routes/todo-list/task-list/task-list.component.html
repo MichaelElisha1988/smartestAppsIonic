@@ -28,25 +28,49 @@
     }
   </section>
   <div class="add-section" [class.new-add]="addActive()">
-    <input
-      type="text"
-      class="add-list-input"
-      [class.new-add]="addActive()"
-      #addInput
-    />
-    <div (click)="addListId()" class="add-list">
-      {{ addActive() ? "Ok" : "Add List" }}
+    <div class="list-actions-toggle" (click)="showListActions.set(!showListActions())">
+       {{ showListActions() ? 'Hide' : 'Show' }} List Options <span>{{ showListActions() ? '▲' : '▼' }}</span>
     </div>
-    @if (!addActive()) {
-    <div (click)="deleteList()" class="add-list">
-      {{ "Remove List" }}
+
+    <div class="actions-wrapper" [class.expanded]="showListActions()">
+      <div class="actions-content">
+        <input
+          type="text"
+          class="add-list-input"
+          [class.new-add]="addActive()"
+          #addInput
+        />
+        <div (click)="addListId()" class="add-list">
+          {{ addActive() ? "Ok" : "Add List" }}
+        </div>
+        @if (!addActive()) {
+        <div (click)="deleteList()" class="add-list">
+          {{ "Remove List" }}
+        </div>
+        }
+      </div>
+
+      @if(listId().length > 0 && listId()[selectedListIndex()].isShared && !addActive()) {
+        <div class="created-by">
+          Created by: {{ listId()[selectedListIndex()].sharedBy }}
+        </div>
+        
+        @if(listId()[selectedListIndex()].sharedWith?.length > 0) {
+          <div class="shared-users-toggle-btn" (click)="showSharedUsers.set(!showSharedUsers())">
+             {{ showSharedUsers() ? 'Hide' : 'Show' }} Shared Users ({{ listId()[selectedListIndex()].sharedWith.length }})
+             <span>{{ showSharedUsers() ? '▲' : '▼' }}</span>
+          </div>
+      
+          <div class="shared-with-wrapper" [class.expanded]="showSharedUsers()">
+            <div class="shared-with-display">
+                @for(user of listId()[selectedListIndex()].sharedWith; track $index) {
+                <span class="user-chip">{{ user }}</span>
+                }
+            </div>
+          </div>
+        }
+      }
     </div>
-    } @if(listId().length > 0 && listId()[selectedListIndex()].isShared &&
-    !addActive()){
-    <div class="created-by">
-      Created by: {{ listId()[selectedListIndex()].sharedBy }}
-    </div>
-    }
   </div>
 
   <!-- <div class="scroll-arrows right">
@@ -59,6 +83,7 @@
     <button class="toggle-share-btn" (click)="isShareBoxVisible.set(!isShareBoxVisible())">
       {{ isShareBoxVisible() ? 'Hide Share Options' : 'Share List' }}
     </button>
+
   </div>
 
   @if(isShareBoxVisible()) {
@@ -68,6 +93,19 @@
       type="email"
       placeholder="Share with emails (comma separated)"
     />
+    
+    @if(recentSharedUsers().length > 0) {
+      <div class="suggestions-container">
+        <div class="suggestion-label">Recent:</div>
+        <div class="suggestion-chips">
+          @for(user of recentSharedUsers(); track $index) {
+            <span class="chip suggestion-chip" (click)="addEmailFromSuggestion(user)">
+              {{ user }}
+            </span>
+          }
+        </div>
+      </div>
+    }
     <button
       class="share-list"
       [disabled]="!shareWithEmail.valid"

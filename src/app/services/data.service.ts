@@ -157,6 +157,7 @@ export class DataService {
                   tmpListId.push({
                     ...(data.data() as ListId),
                     dbId: data.id,
+                    firebaseCollectionKey: collectionKey
                   });
                 }
               });
@@ -192,7 +193,11 @@ export class DataService {
         return getDocs(this.sharedListIdRef!).then((data) => {
           data.docs.forEach((data) => {
              if (!tmpListId.find((x) => x.id === (data.data() as ListId).id)) {
-                tmpListId.push({ ...(data.data() as ListId), dbId: data.id });
+                tmpListId.push({ 
+                    ...(data.data() as ListId), 
+                    dbId: data.id,
+                    firebaseCollectionKey: collectionKey
+                });
              }
           });
         });
@@ -795,8 +800,7 @@ export class DataService {
     }
   }
 
-  // Method to update List Item (Rename, etc.)
-  async updateListData(list: ListId) {
+  async updateListData(list: ListId, oldName?: string) {
     this.initRefs();
     if (list.dbId) {
       if (!list.isShared) {
@@ -807,9 +811,32 @@ export class DataService {
         );
         await updateDoc(docRef, { ...list });
       } else {
-        const collectionKey = shajs('sha256')
-          .update(`${list.sharedBy}${list.name}`)
+        const nameForHash = oldName || list.name;
+        // Fallback: If sharedBy is missing, use current user email
+        const sharedBy = list.sharedBy || JSON.parse(localStorage.getItem('login')!).email;
+
+        const computedKey = shajs('sha256')
+          .update(`${sharedBy}${nameForHash}`)
           .digest('hex');
+          
+        // CRITICAL FIX: Prefer the original key stored at load time
+        const collectionKey = list.firebaseCollectionKey || computedKey;
+        
+        console.log('UpdateListData: Updating Shared List. Key:', collectionKey);
+
+        this.sharedListIdRef = collection(
+          this.DataBaseApp,
+          `sharedListId${collectionKey}`
+        );
+        
+        const docRef = doc(
+            this.DataBaseApp,
+            `sharedListId${collectionKey}`,
+            list.dbId
+        );
+        
+        await updateDoc(docRef, { ...list, firebaseCollectionKey: collectionKey })
+           .catch(e => console.error('UpdateListData: Failed to update shared list', e));
       }
     }
     await this.getListId();

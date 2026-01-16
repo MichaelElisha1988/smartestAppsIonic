@@ -47,7 +47,15 @@
       }
       <h2 class="list-title">General</h2>
       <li class="list-item">Add/Remove Measurements</li>
-      <li class="list-item" (click)="toggleWidget()">Show/Hide Widget</li>
+      <li class="list-item" (click)="toggleWidget()">
+        Widget Status:
+        <span [className]="'status-badge ' + widgetBtnStyle" [class.show-action]="!widgetHidden" [class.hide-action]="widgetHidden">
+            {{ widgetHidden ? 'Hidden' : 'Visible' }}
+        </span> 
+      </li>
+      <li class="list-item" (click)="cycleAppTheme()">
+        App Theme: <span style="font-weight: 700; color: var(--ion-color-secondary);">{{ appTheme | titlecase }}</span>
+      </li>
       @if(!router.url.includes('policy')) {
       <h2 class="list-title">Policies</h2>
       <li class="list-item" (click)="relocate('policy')">Privacy Policy</li>
