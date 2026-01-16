@@ -7,47 +7,89 @@
     @if(isAddMode()) {
     <div class="add-recipe-overlay">
         <div class="add-recipe-container">
-            <h3>Add New Recipe</h3>
+            <div class="wizard-header">
+                <div class="step-indicator" [class.active]="currentStep() >= 1" [class.completed]="currentStep() > 1">
+                    <div class="circle">1</div>
+                    <span>Essentials</span>
+                </div>
+                <div class="line" [class.filled]="currentStep() > 1"></div>
+                <div class="step-indicator" [class.active]="currentStep() >= 2" [class.completed]="currentStep() > 2">
+                    <div class="circle">2</div>
+                    <span>Ingredients</span>
+                </div>
+                <div class="line" [class.filled]="currentStep() > 2"></div>
+                <div class="step-indicator" [class.active]="currentStep() >= 3">
+                    <div class="circle">3</div>
+                    <span>Method</span>
+                </div>
+            </div>
+
             <form [formGroup]="addRecipeForm" (submit)="saveCustomRecipe()">
                 <div class="form-scroll-container">
-                    <input type="text" formControlName="strMeal" placeholder="Recipe Name" />
-                    <input type="text" formControlName="strCategory" placeholder="Category" />
-                    <input type="text" formControlName="strArea" placeholder="Area" />
-                    <div class="image-input-group">
-                        <input type="text" formControlName="strMealThumb" placeholder="Image URL (optional)" />
-                        <button type="button" class="suggest-btn" (click)="getSuggestions()" title="Get Suggestions from Title">
-                            Suggest
-                        </button>
-                    </div>
-                    
-                    @if(suggestedImages().length > 0) {
-                        <div class="suggestions-container">
-                            @for(img of suggestedImages(); track $index) {
-                                <img [src]="img" (click)="selectSuggestion(img)" class="suggestion-thumb" />
-                            }
-                        </div>
-                    }
-                    <input type="text" formControlName="strYoutube" placeholder="Youtube Link (optional)" />
-                    <textarea formControlName="strInstructions" placeholder="Instructions"></textarea>
-                    <input type="text" formControlName="strTags" placeholder="Tags" />
-
-                    <!-- Ingredients Section -->
-                    <div class="ingredients-section" formArrayName="ingredients">
-                        <h4>Ingredients</h4>
-                        @for(group of ingredients.controls; track $index) {
-                            <div [formGroupName]="$index" class="ingredient-row">
-                                <input type="text" formControlName="ingredient" placeholder="Ingredient" />
-                                <input type="text" formControlName="measure" placeholder="Measure" />
-                                <button type="button" class="remove-btn" (click)="removeIngredient($index)">X</button>
+                    @switch (currentStep()) {
+                        @case (1) {
+                            <div class="step-content fade-in">
+                                <h3>The Basics</h3>
+                                <input type="text" formControlName="strMeal" placeholder="Recipe Name *" />
+                                <div class="row">
+                                    <input type="text" formControlName="strCategory" placeholder="Category *" />
+                                    <input type="text" formControlName="strArea" placeholder="Area *" />
+                                </div>
+                                <div class="image-input-group">
+                                    <input type="text" formControlName="strMealThumb" placeholder="Image URL (optional)" />
+                                    <button type="button" class="suggest-btn" (click)="getSuggestions()" title="Get Suggestions from Title">
+                                        Suggest
+                                    </button>
+                                </div>
+                                
+                                @if(suggestedImages().length > 0) {
+                                    <div class="suggestions-container">
+                                        @for(img of suggestedImages(); track $index) {
+                                            <img [src]="img" (click)="selectSuggestion(img)" class="suggestion-thumb" />
+                                        }
+                                    </div>
+                                }
+                                <input type="text" formControlName="strYoutube" placeholder="Youtube Link (optional)" />
+                                <input type="text" formControlName="strTags" placeholder="Tags (comma separated)" />
                             </div>
                         }
-                        <button type="button" class="add-ingredient-btn" (click)="addIngredient()">+ Add Ingredient</button>
-                    </div>
+                        @case (2) {
+                            <div class="step-content fade-in">
+                                <h3>Ingredients</h3>
+                                <div class="ingredients-section" formArrayName="ingredients">
+                                    @for(group of ingredients.controls; track $index) {
+                                        <div [formGroupName]="$index" class="ingredient-row">
+                                            <input type="text" formControlName="ingredient" placeholder="Ingredient" />
+                                            <input type="text" formControlName="measure" placeholder="Measure" />
+                                            <button type="button" class="remove-btn" (click)="removeIngredient($index)">X</button>
+                                        </div>
+                                    }
+                                    <button type="button" class="add-ingredient-btn" (click)="addIngredient()">+ Add Ingredient</button>
+                                </div>
+                            </div>
+                        }
+                        @case (3) {
+                            <div class="step-content fade-in">
+                                <h3>Instructions</h3>
+                                <textarea formControlName="strInstructions" placeholder="Step-by-step instructions... *" rows="10"></textarea>
+                            </div>
+                        }
+                    }
                 </div>
 
-                <div class="form-actions">
-                    <button type="button" class="cancel-btn" (click)="toggleAddMode()">Cancel</button>
-                    <button type="submit" class="save-btn" [disabled]="!addRecipeForm.valid || ingredients.length === 0">Save Locally</button>
+                <div class="form-actions wizard-actions">
+                    @if(currentStep() === 1) {
+                        <button type="button" class="cancel-btn" (click)="toggleAddMode()">Cancel</button>
+                        <button type="button" class="save-btn" (click)="nextStep()">Next</button>
+                    }
+                    @if(currentStep() === 2) {
+                        <button type="button" class="cancel-btn" (click)="prevStep()">Back</button>
+                        <button type="button" class="save-btn" (click)="nextStep()">Next</button>
+                    }
+                    @if(currentStep() === 3) {
+                        <button type="button" class="cancel-btn" (click)="prevStep()">Back</button>
+                        <button type="submit" class="save-btn" [disabled]="!addRecipeForm.valid || ingredients.length === 0">Finish</button>
+                    }
                 </div>
             </form>
         </div>

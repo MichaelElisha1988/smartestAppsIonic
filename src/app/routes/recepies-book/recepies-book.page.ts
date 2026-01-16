@@ -60,6 +60,40 @@ export class RecepiesBookPage implements OnInit {
   });
   isAddMode = signal(false);
   suggestedImages = signal<string[]>([]); // Store suggested image URLs
+  
+  // Wizard Step Control
+  currentStep = signal(1);
+
+  nextStep() {
+      if (this.currentStep() === 1) {
+          if (this.addRecipeForm.get('strMeal')?.valid && 
+              this.addRecipeForm.get('strCategory')?.valid && 
+              this.addRecipeForm.get('strArea')?.valid) {
+              this.currentStep.set(2);
+          } else {
+              this.addRecipeForm.markAllAsTouched();
+              alert('Please fill in all required fields (Name, Category, Area).');
+          }
+      } else if (this.currentStep() === 2) {
+          if (this.ingredients.length > 0 && this.ingredients.valid) {
+              this.currentStep.set(3);
+          } else {
+               alert('Please add at least one valid ingredient.');
+          }
+      }
+  }
+
+  prevStep() {
+      if (this.currentStep() > 1) {
+          this.currentStep.update(s => s - 1);
+      }
+  }
+  
+  // Reset step on toggle
+  toggleAddMode() {
+      this.isAddMode.set(!this.isAddMode());
+      this.currentStep.set(1);
+  }
 
   // Getter for ingredients form array
   get ingredients() {
@@ -258,9 +292,7 @@ export class RecepiesBookPage implements OnInit {
       }
   }
 
-  toggleAddMode() {
-      this.isAddMode.set(!this.isAddMode());
-  }
+
 
   ngOnInit() {
     const mealList: Meal[] = [];
