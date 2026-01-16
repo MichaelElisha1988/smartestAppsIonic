@@ -22,15 +22,37 @@
 
             <div class="templates-list">
                 @for(template of templates(); track template.id) {
-                    <div class="template-item">
-                        <div class="info">
-                            <span class="name">{{ template.name }}</span>
-                            <span class="count">{{ template.tasks.length }} tasks</span>
-                        </div>
-                        <div class="item-actions">
-                            <button class="load-btn" (click)="loadTemplate(template.id)">Load</button>
-                            <button class="delete-btn" (click)="deleteTemplate(template.id)">Delete</button>
-                        </div>
+                    <div class="template-item" [class.editing]="editingTemplateId() === template.id">
+                        @if(editingTemplateId() !== template.id) {
+                            <div class="info">
+                                <span class="name">{{ template.name }}</span>
+                                <span class="count">{{ template.tasks.length }} tasks</span>
+                            </div>
+                            <div class="item-actions">
+                                <button class="load-btn" (click)="loadTemplate(template.id)">Load</button>
+                                <button class="edit-btn" (click)="startEditing(template)">Edit</button>
+                                <button class="delete-btn" (click)="deleteTemplate(template.id)">Delete</button>
+                            </div>
+                        } @else {
+                            <div class="edit-container">
+                                <input type="text" [value]="editingName()" (input)="editingName.set($any($event.target).value)" class="edit-name-input" placeholder="Template Name" />
+                                
+                                <div class="edit-tasks-list">
+                                    @for(task of editingTasks(); track $index) {
+                                        <div class="edit-task-row">
+                                            <input type="text" [value]="task" (blur)="updateTaskInEdit($index, $event)" />
+                                            <button class="remove-task-btn" (click)="removeTaskFromEdit($index)">X</button>
+                                        </div>
+                                    }
+                                    <button class="add-task-btn" (click)="addTaskToEdit()">+ Add Task</button>
+                                </div>
+
+                                <div class="edit-actions">
+                                    <button class="cancel-btn" (click)="cancelEditing()">Cancel</button>
+                                    <button class="save-btn" (click)="saveEditing()">Save Changes</button>
+                                </div>
+                            </div>
+                        }
                     </div>
                 } @empty {
                     <p class="empty-msg">No templates saved yet.</p>

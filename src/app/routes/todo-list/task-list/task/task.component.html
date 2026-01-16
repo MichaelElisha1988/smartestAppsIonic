@@ -1,3 +1,11 @@
+<div class="templates-header">
+    <button class="load-btn" (click)="showTemplatesPopup.set(true)">Load Template</button>
+</div>
+
+@if(showTemplatesPopup()) {
+    <app-templates-popup (close)="showTemplatesPopup.set(false)"></app-templates-popup>
+}
+
 <section
   *ngFor="let task of shownList; let i = index"
   class="task extend {{ task.id }}"

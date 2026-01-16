@@ -1,15 +1,16 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, effect, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TaskModel } from 'src/app/models/task.model';
 import { DataService } from 'src/app/services/data.service';
+import { TemplatesPopupComponent } from '../../popups/templates-popup/templates-popup.component';
 
 @Component({
   selector: 'task',
   templateUrl: './task.component.html',
   styleUrls: ['./task.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TemplatesPopupComponent],
 })
 export class TaskComponent implements OnInit {
   taskList: TaskModel[] = [];
@@ -20,6 +21,7 @@ export class TaskComponent implements OnInit {
   lastexpandTask: any = null;
   seeInfo: boolean = false;
   taskInfoSeen: TaskModel | null = null;
+  showTemplatesPopup = signal(false);
 
   taskNameEdit = new FormGroup({
     taskEdit: new FormControl('', {

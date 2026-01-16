@@ -48,9 +48,6 @@
           {{ "Remove List" }}
         </div>
         }
-        <div (click)="showTemplatesPopup.set(true)" class="add-list templates-btn">
-          Templates
-        </div>
       </div>
 
       @if(listId().length > 0 && listId()[selectedListIndex()].isShared && !addActive()) {
@@ -122,6 +119,4 @@
 </div>
 <task class="tasks"></task>
 <!-- <button (click)="fordev()">For Dev></button> -->
-@if(showTemplatesPopup()) {
-  <app-templates-popup (close)="showTemplatesPopup.set(false)"></app-templates-popup>
-}
+

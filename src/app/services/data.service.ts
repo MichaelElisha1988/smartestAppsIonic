@@ -823,6 +823,15 @@ export class DataService {
       localStorage.setItem('taskTemplates', JSON.stringify(templates));
   }
 
+  updateTemplate(updatedTemplate: any) {
+      const templates = this.getTemplates();
+      const index = templates.findIndex((t: any) => t.id === updatedTemplate.id);
+      if (index !== -1) {
+          templates[index] = updatedTemplate;
+          localStorage.setItem('taskTemplates', JSON.stringify(templates));
+      }
+  }
+
   loadTemplateIntoList(templateId: string, targetListId: number) {
       const templates = this.getTemplates();
       const template = templates.find((t: any) => t.id === templateId);

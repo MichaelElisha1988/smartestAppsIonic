@@ -20,6 +20,10 @@ export class TemplatesPopupComponent implements OnInit {
   showSaveInput = signal(false);
   newTemplateName = signal('');
 
+  editingTemplateId = signal<string | null>(null);
+  editingName = signal('');
+  editingTasks = signal<string[]>([]);
+
   ngOnInit() {
       this.refreshTemplates();
   }
@@ -53,6 +57,54 @@ export class TemplatesPopupComponent implements OnInit {
       this.dataSrv.saveTemplate(this.newTemplateName(), currentTasks);
       this.refreshTemplates();
       this.toggleSaveMode();
+  }
+
+  startEditing(template: TaskTemplate) {
+      this.editingTemplateId.set(template.id);
+      this.editingName.set(template.name);
+      this.editingTasks.set([...template.tasks]); // Copy array
+  }
+
+  cancelEditing() {
+      this.editingTemplateId.set(null);
+      this.editingName.set('');
+      this.editingTasks.set([]);
+  }
+
+  saveEditing() {
+      if (this.editingName().trim().length < 2) {
+          alert('Please enter a valid name.');
+          return;
+      }
+      
+      const updatedTemplate: TaskTemplate = {
+          id: this.editingTemplateId()!,
+          name: this.editingName(),
+          tasks: this.editingTasks()
+      };
+      
+      this.dataSrv.updateTemplate(updatedTemplate);
+      this.refreshTemplates();
+      this.cancelEditing();
+  }
+
+  removeTaskFromEdit(index: number) {
+      this.editingTasks.update(tasks => tasks.filter((_, i) => i !== index));
+  }
+
+  addTaskToEdit() {
+      const newTask = prompt('Enter new task:');
+      if(newTask && newTask.trim()) {
+           this.editingTasks.update(tasks => [...tasks, newTask.trim()]);
+      }
+  }
+  
+  updateTaskInEdit(index: number, newValue: any) {
+       this.editingTasks.update(tasks => {
+           const newTasks = [...tasks];
+           newTasks[index] = newValue.target.value;
+           return newTasks;
+       });
   }
 
   loadTemplate(templateId: string) {
