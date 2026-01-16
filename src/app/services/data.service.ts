@@ -800,6 +800,60 @@ export class DataService {
     }
   }
 
+  // --- TASK TEMPLATES (LocalStorage) ---
+
+  getTemplates(): any[] {
+      const stored = localStorage.getItem('taskTemplates');
+      return stored ? JSON.parse(stored) : [];
+  }
+
+  saveTemplate(name: string, tasks: string[]) {
+      const templates = this.getTemplates();
+      const newTemplate = {
+          id: new Date().getTime().toString(),
+          name: name,
+          tasks: tasks
+      };
+      templates.push(newTemplate);
+      localStorage.setItem('taskTemplates', JSON.stringify(templates));
+  }
+
+  deleteTemplate(id: string) {
+      const templates = this.getTemplates().filter((t: any) => t.id !== id);
+      localStorage.setItem('taskTemplates', JSON.stringify(templates));
+  }
+
+  loadTemplateIntoList(templateId: string, targetListId: number) {
+      const templates = this.getTemplates();
+      const template = templates.find((t: any) => t.id === templateId);
+      
+      if (template && template.tasks) {
+          template.tasks.forEach((taskTitle: string) => {
+              const newTask: TaskModel = {
+                listID: targetListId,
+                id: new Date().valueOf() + Math.random(), // Ensure unique ID
+                task: taskTitle,
+                author: this.getLoginName(),
+                date: this.getDateString(),
+                status: "don't you forget",
+                currentStatus: 1,
+                editMode: false,
+                seeInfo: false,
+                color: Math.floor(Math.random() * 16777215).toString(16),
+                isCheckBox: true,
+                didIt: false,
+              };
+              
+              // Add to local state immediately
+              this.taskList.update(prev => [...prev, newTask]);
+              
+              // Save to DB (Fire and forget individual saves)
+              this.updateTaskData(newTask); 
+          });
+      }
+  }
+
+
   async updateListData(list: ListId, oldName?: string) {
     this.initRefs();
     if (list.dbId) {

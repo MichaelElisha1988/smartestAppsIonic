@@ -1,0 +1,41 @@
+<div class="overlay" (click)="close.emit()">
+    <div class="popup-container" (click)="$event.stopPropagation()">
+        <div class="header">
+            <h3>Task Templates</h3>
+            <button class="close-btn" (click)="close.emit()">X</button>
+        </div>
+
+        <div class="content">
+            @if(!showSaveInput()) {
+                <button class="create-btn" (click)="toggleSaveMode()">
+                    + Save Current List as Template
+                </button>
+            } @else {
+                <div class="save-form">
+                    <input type="text" [ngModel]="newTemplateName()" (ngModelChange)="newTemplateName.set($event)" placeholder="Template Name (e.g., Grocery)" />
+                    <div class="actions">
+                        <button class="cancel-btn" (click)="toggleSaveMode()">Cancel</button>
+                        <button class="save-btn" (click)="saveCurrentList()">Save</button>
+                    </div>
+                </div>
+            }
+
+            <div class="templates-list">
+                @for(template of templates(); track template.id) {
+                    <div class="template-item">
+                        <div class="info">
+                            <span class="name">{{ template.name }}</span>
+                            <span class="count">{{ template.tasks.length }} tasks</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="load-btn" (click)="loadTemplate(template.id)">Load</button>
+                            <button class="delete-btn" (click)="deleteTemplate(template.id)">Delete</button>
+                        </div>
+                    </div>
+                } @empty {
+                    <p class="empty-msg">No templates saved yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

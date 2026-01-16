@@ -13,13 +13,14 @@ import { TaskComponent } from './task/task.component';
 import { ListId } from 'src/app/models/list-id.model';
 import { DataService } from 'src/app/services/data.service';
 import { smartestAppsStore } from 'src/app/services/data-store.service';
+import { TemplatesPopupComponent } from '../popups/templates-popup/templates-popup.component';
 
 @Component({
   selector: 'task-list',
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TaskComponent],
+  imports: [CommonModule, ReactiveFormsModule, TaskComponent, TemplatesPopupComponent],
 })
 export class TaskListComponent {
   listId = signal<ListId[]>([]);
@@ -32,6 +33,7 @@ export class TaskListComponent {
   showSharedUsers = signal(false);
   showListActions = signal(false);
   recentSharedUsers = signal<string[]>([]);
+  showTemplatesPopup = signal(false);
   
   shareWithEmail = new FormControl<string>('', [
     Validators.required,
