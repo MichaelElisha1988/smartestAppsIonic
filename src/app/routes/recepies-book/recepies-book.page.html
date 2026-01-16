@@ -10,17 +10,12 @@
             <div class="wizard-header">
                 <div class="step-indicator" [class.active]="currentStep() >= 1" [class.completed]="currentStep() > 1">
                     <div class="circle">1</div>
-                    <span>Essentials</span>
                 </div>
-                <div class="line" [class.filled]="currentStep() > 1"></div>
                 <div class="step-indicator" [class.active]="currentStep() >= 2" [class.completed]="currentStep() > 2">
                     <div class="circle">2</div>
-                    <span>Ingredients</span>
                 </div>
-                <div class="line" [class.filled]="currentStep() > 2"></div>
                 <div class="step-indicator" [class.active]="currentStep() >= 3">
                     <div class="circle">3</div>
-                    <span>Method</span>
                 </div>
             </div>
 
@@ -29,7 +24,6 @@
                     @switch (currentStep()) {
                         @case (1) {
                             <div class="step-content fade-in">
-                                <h3>The Basics</h3>
                                 <input type="text" formControlName="strMeal" placeholder="Recipe Name *" />
                                 <div class="row">
                                     <input type="text" formControlName="strCategory" placeholder="Category *" />

@@ -256,7 +256,6 @@
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         
         &:hover {
-           transform: scale(1.1) rotate(90deg);
            box-shadow: 0 0 30px var(--c-secondary-glow);
         }
         
@@ -299,12 +298,11 @@
           box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), 0 0 10px rgba(0, 240, 255, 0.4);
           
           /* Wizard Header Styles */
-          .wizard-header {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              margin-bottom: 20px;
-              padding: 0 10px;
+          .wizard-header {    
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            margin-bottom: 20px;
 
               .step-indicator {
                   display: flex;
