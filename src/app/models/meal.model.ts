@@ -9,6 +9,8 @@ export interface Meal {
   strArea: string;
   strInstructions: string;
   strTags: string;
+  isCustom: boolean;
+  published: boolean;
   strYoutube: string;
   strMealThumb: string;
   strIngredient1: string;

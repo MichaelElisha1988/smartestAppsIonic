@@ -91,19 +91,28 @@
     }
     @if(selectedMeal()){
     <div class="recipie-item-big">
-      <div
-        class="tofavorite"
-        (click)="
-            notFav
-              ? addTofavorite()
-              : deleteFromFavorite()
-          "
-      >
-        <img
-          src="{{ notFav ? 'assets/favorite.png' : 'assets/delete.png' }}"
-          alt=""
-        />
+      @if(!isShared()){
+        <div
+          class="tofavorite"
+          (click)="
+              notFav
+                ? addTofavorite()
+                : deleteFromFavorite()
+            "
+        >
+          <img
+            src="{{ notFav ? 'assets/favorite.png' : 'assets/delete.png' }}"
+            alt=""
+          />
+        </div>
+      }
+      @if(selectedMeal()!.isCustom && !isShared()){
+      <div class="publish" (click)="publishToCommunity()">
+        <!-- <img src="assets/publish.png" alt="+" /> -->
+
+         <span>{{ selectedMeal()!.published ? '-' : '+' }}</span>
       </div>
+      }
       <img
         class="back-img"
         src="{{ selectedMeal()!.strMealThumb }}"
@@ -121,9 +130,11 @@
           }
         </div>
 
+      @if(!isShared() || loginEmail() !== selectedMealFollowedByEmail()){
         <div class="read-more" (click)="ViewuserDetail(selectedMeal()!)">
           Lets's cook it...
         </div>
+      }
       </div>
       <!-- <div class="lier-one"></div>
         <div class="lier-two"></div> -->
@@ -150,6 +161,15 @@
       }
     </form>
 
+    <form [formGroup]="searchToFollowForm" (ngSubmit)="searchToFollowFormSubmit()">
+      <div class="search-to-follow">
+        <h2>Search to follow</h2>
+        <input type="text" placeholder="Search..." formControlName="search"/>
+        <button type="submit">Search</button>
+      </div>
+    </form>
+
+
     <div class="favorite-list-wrapper">
       <h2 class="favorite">Favorite :</h2>
       <div class="favorite-list">
@@ -169,6 +189,51 @@
         }
       </div>
     </div>
+    @if(sharedMealList().length > 0){
+    <div class="favorite-list-wrapper">
+      <h2 class="favorite">Shared Recipies :</h2>
+      <div class="favorite-list">
+        @for (meal of sharedMealList(); track $index) {
+        <div class="recipie-item-small">
+          <img
+            class="back-img"
+            (click)="selectMeal(meal, true)"
+            src="{{ meal.strMealThumb }}"
+            alt="steak"
+          />
+        </div>
+        }@empty {
+        <div class="empty-favorite">
+          <p>No favorite meals yet.</p>
+        </div>
+        }
+      </div>
+      </div>
+    }
+
+    @if(followedSharedMealList().length > 0){
+    <div class="favorite-list-wrapper">
+      @for (meal of followedSharedMealList(); track $index) {
+      <h2 class="favorite">{{ meal.followedByEmail }}</h2>
+      <div class="favorite-list">
+        @for (mealItem of meal.mealList; track $index) {
+        <div class="recipie-item-small">
+          <img
+            class="back-img"
+            (click)="selectMeal(mealItem, true, meal.followedByEmail)"
+            src="{{ mealItem.strMealThumb }}"
+            alt="steak"
+          />
+        </div>
+        }@empty {
+        <div class="empty-favorite">
+          <p>No favorite meals yet.</p>
+        </div>
+        }
+      </div>
+    }
+      </div>
+    }
 
     @if(tenMealsInStok){
     <div class="random-list-wrapper">
@@ -188,4 +253,27 @@
     </div>
     }
   </section>
+
+    @if(showSearchPopup()) {
+      <div class="search-result-overlay">
+          <div class="search-result-container">
+              <div class="header">
+                  <h2>Found Recipes</h2>
+                  <div class="close-btn" (click)="closeSearchPopup()">
+                       <ion-icon name="close-outline"></ion-icon>
+                  </div>
+              </div>
+              <div class="results-list">
+                  @for(meal of foundMeals(); track $index) {
+                      <div class="recipie-item-small" (click)="selectMeal(meal, true); closeSearchPopup()">
+                          <img [src]="meal.strMealThumb" class="back-img">
+                          <div class="title">{{ meal.strMeal }}</div>
+                      </div>
+                  } @empty {
+                       <p class="empty-msg">No recipes found.</p>
+                  }
+              </div>
+          </div>
+      </div>
+    }
 </ion-content>

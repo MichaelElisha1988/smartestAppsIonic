@@ -8,7 +8,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { IonContent } from '@ionic/angular/standalone';
+import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs';
 import { RecipiesDataService } from './recipies-data.service';
@@ -23,7 +25,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './recepies-book.page.html',
   styleUrls: ['./recepies-book.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [IonContent, CommonModule, FormsModule, ReactiveFormsModule, IonIcon],
 })
 export class RecepiesBookPage implements OnInit {
   searchForm = new FormGroup({
@@ -35,7 +37,10 @@ export class RecepiesBookPage implements OnInit {
   dataStore = inject(smartestAppsStore);
   dataHttp = inject(DataService);
   http = inject(HttpClient); 
+  loginEmail = signal<string>(JSON.parse(localStorage.getItem('login')!).email);
+  selectedMealFollowedByEmail = signal<string>('');
 
+  isShared = signal<boolean>(false);
   notFav: boolean = true;
   searchFormStatusEffect = toSignal(this.searchForm.statusChanges);
   searchMealValueEffect = toSignal(
@@ -46,7 +51,15 @@ export class RecepiesBookPage implements OnInit {
   selectedMeal = signal<Meal | null>(null);
   searchMealsInStok = signal<Meal[]>([]);
   favoriteMealList = signal<Meal[]>([]);
+  sharedMealList = signal<Meal[]>([]);
+  foundMeals = signal<Meal[]>([]);
+  showSearchPopup = signal<boolean>(false);
+  followedSharedMealList = signal<{followedByEmail: string, mealList: Meal[]}[]>([]);
   tenMealsInStok: Meal[] = [];
+
+  searchToFollowForm = new FormGroup({
+    search: new FormControl<string>('', { validators: [Validators.required, Validators.email], updateOn: 'change' })
+  });
 
   addRecipeForm = new FormGroup({
     strMeal: new FormControl('', Validators.required),
@@ -83,10 +96,47 @@ export class RecepiesBookPage implements OnInit {
       }
   }
 
+  publishToCommunity() {
+    if(this.selectedMeal()?.isCustom != undefined){
+      this.selectedMeal()!.published! = !this.selectedMeal()!.published!;
+      this.recipiesSrv.publishMeal(this.selectedMeal()!, this.selectedMeal()!.published);
+    }
+  }
+
   prevStep() {
       if (this.currentStep() > 1) {
           this.currentStep.update(s => s - 1);
       }
+  }
+
+  searchToFollowFormSubmit() {
+    console.log('Search submit triggered');
+    const search = this.searchToFollowForm.value.search;
+    console.log('Form status:', this.searchToFollowForm.status);
+    console.log('Search Value:', search);
+    
+    if(this.searchToFollowForm.valid && search){
+      console.log('Calling searchSharedList...');
+      this.recipiesSrv.searchSharedList(search).then((res: any[]) => {
+          console.log('Search result:', res);
+          // res is array of arrays (one per email searched)
+          if(res && res.length > 0 && res[0].length > 0) {
+              this.foundMeals.set(res[0]);
+              this.showSearchPopup.set(true);
+          } else {
+              this.foundMeals.set([]);
+              console.log('No meals found for this user');
+              // Maybe show toast? For now just log.
+          }
+      });
+    } else {
+      console.warn('Form invalid or empty search');
+    }
+  }
+
+  closeSearchPopup() {
+      this.showSearchPopup.set(false);
+      this.foundMeals.set([]);
   }
   
   // Reset step on toggle
@@ -143,6 +193,7 @@ export class RecepiesBookPage implements OnInit {
   }
 
   constructor() {
+    addIcons({ closeOutline });
     effect(() => {
       if (
         this.searchFormValueEffect() &&
@@ -172,7 +223,20 @@ export class RecepiesBookPage implements OnInit {
        const apiFavs = this.dataStore.favoriteMealList();
        this.refreshFavorites(apiFavs);
     }, { allowSignalWrites: true });
+
+    // LOAD SHARED RECIPES (FIREBASE CUSTOM)
+    effect(() => {
+       const sharedList = this.dataStore.sharedMealList();
+       this.refreshShared(sharedList);
+    }, { allowSignalWrites: true });
+
+    // LOAD FOLLOWED SHARED RECIPES (FIREBASE CUSTOM)
+    effect(() => {
+       const followedSharedList = this.dataStore.followedSharedMealList();
+       this.followedSharedMealList.set(followedSharedList);
+    }, { allowSignalWrites: true });
   }
+
 
   async refreshFavorites(favList: any[]) {
       this.favoriteMealList.set([]); 
@@ -193,6 +257,37 @@ export class RecepiesBookPage implements OnInit {
                   .subscribe((data) => {
                     if(data.meals && data.meals.length > 0) {
                        this.favoriteMealList.update(list => {
+                           if(!list.find(m => m.idMeal === data.meals[0].idMeal)) {
+                               return [...list, data.meals[0]];
+                           }
+                           return list;
+                       });
+                    }
+                  });
+              }
+          });
+      }
+  }
+
+  async refreshShared(sharedList: any[]) {
+      this.sharedMealList.set([]); 
+      
+      if (sharedList && sharedList.length > 0) {
+          sharedList.forEach(sharedItem => {
+              if (sharedItem.isCustom || sharedItem.strInstructions) {
+                   this.sharedMealList.update(list => {
+                      if(!list.find(m => m.idMeal === sharedItem.idMeal)) {
+                           return [...list, sharedItem as Meal];
+                      }
+                      return list;
+                  });
+              } else {
+                   this.recipiesSrv
+                  .getMealByName(sharedItem.name)
+                  .pipe(take(1))
+                  .subscribe((data) => {
+                    if(data.meals && data.meals.length > 0) {
+                       this.sharedMealList.update(list => {
                            if(!list.find(m => m.idMeal === data.meals[0].idMeal)) {
                                return [...list, data.meals[0]];
                            }
@@ -269,6 +364,8 @@ export class RecepiesBookPage implements OnInit {
               strCategory: formVal.strCategory!,
               strArea: formVal.strArea!,
               strInstructions: formVal.strInstructions!,
+              isCustom: true,
+              published: false,
               strMealThumb: formVal.strMealThumb || 'assets/custom-recipe.png', 
               strTags: formVal.strTags || '',
               strYoutube: formVal.strYoutube || '',
@@ -305,11 +402,10 @@ export class RecepiesBookPage implements OnInit {
     this.tenMealsInStok = mealList;
   }
 
-  selectMeal(meal: Meal) {
-    this.favoriteMealList().filter((m) => m.idMeal === meal.idMeal).length > 0
-      ? (this.notFav = false)
-      : (this.notFav = true);
+  selectMeal(meal: Meal, isShared: boolean = false, selectedMealFollowedByEmail: string = this.loginEmail()) {
     this.selectedMeal.set(meal);
+    this.isShared.set(isShared);
+    this.selectedMealFollowedByEmail.set(selectedMealFollowedByEmail);
   }
   ViewuserDetail(selectedMeal: Meal) {
     this.dataStore.setSelectedMeal(selectedMeal);

@@ -22,10 +22,13 @@ export interface smartestAppsState {
   loginError: string; // Placeholder for login error observable
   afterlogin$: any; // Placeholder for after login subject
   favoriteMealList: (Meal | { dbId?: string; id: number; name: string })[];
+  sharedMealList: (Meal | { dbId?: string; id: number; name: string })[];
   selectedMeal: Meal | null;
+  followedEmails: string[];
+  followedSharedMealList: {followedByEmail: string, mealList: Meal[]}[];
 }
 
-const initialState: smartestAppsState = {
+const initialState: smartestAppsState = { 
   loader: false,
   measureStatus: { action: null, status: MeasureStatus.HOME },
   menuStatus: menuStatus.MEASURE,
@@ -40,7 +43,12 @@ const initialState: smartestAppsState = {
   loginError: '',
   afterlogin$: localStorage.getItem('login') ? true : false,
   favoriteMealList: [], // Initialize with an empty array
+  sharedMealList: [], // Initialize with an empty array
   selectedMeal: null, // Initialize with null
+  followedEmails: sessionStorage.getItem('followedEmails')
+    ? JSON.parse(sessionStorage.getItem('followedEmails')!)
+    : [],
+  followedSharedMealList: [],
 };
 
 export const smartestAppsStore = signalStore(
@@ -71,6 +79,19 @@ export const smartestAppsStore = signalStore(
         tap((afterLogin) => patchState(store, { afterlogin$: afterLogin }))
       )
     ),
+    setFollowedSharedMealList: rxMethod<{
+      followedByEmail: string;
+      mealList: any[];
+    }[]>((mealList) =>
+      mealList.pipe(
+        tap((mealList) => patchState(store, { followedSharedMealList: mealList }))
+      )
+    ),
+    setFollowedEmails: rxMethod<string[]>((emailUsers) =>
+      emailUsers.pipe(
+        tap((emailUsers) => patchState(store, { followedEmails: emailUsers }))
+      )
+    ),
     setLoginError: rxMethod<string>((errorMsg) =>
       errorMsg.pipe(
         tap((errorMsg) => patchState(store, { loginError: errorMsg }))
@@ -81,6 +102,13 @@ export const smartestAppsStore = signalStore(
     >((MealList) =>
       MealList.pipe(
         tap((MealList) => patchState(store, { favoriteMealList: MealList }))
+      )
+    ),
+    setSharedMealList: rxMethod<
+      (Meal | { dbId?: string; id: number; name: string })[]
+    >((MealList) =>
+      MealList.pipe(
+        tap((MealList) => patchState(store, { sharedMealList: MealList }))
       )
     ),
     showLoader: rxMethod<boolean>((show) =>

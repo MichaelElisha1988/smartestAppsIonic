@@ -39,6 +39,10 @@ export class DataService {
   taskListRef!: CollectionReference;
   sharedTaskListRef: CollectionReference | null = null;
   favoriteMealRef!: CollectionReference;
+
+  sharedMealRef!: CollectionReference;
+  sharedMealList = signal<any[]>([]);
+
   sharingWithEmailsRef!: CollectionReference;
   sharedEmailsRef: CollectionReference | null = null;
   loginName: string = '';
@@ -70,6 +74,8 @@ export class DataService {
      this.DataBaseApp = this.loginSrv.getDataBaseApp();
      const uid = JSON.parse(loginData).uid;
 
+     const emailUser = JSON.parse(loginData).email;
+
      this.listIdRef = collection(
       this.DataBaseApp,
       `listId${uid}`
@@ -87,6 +93,10 @@ export class DataService {
       this.DataBaseApp,
       `favoriteMealRef${uid}`
      );
+     this.sharedMealRef = collection(
+      this.DataBaseApp,
+      `sharedMealRef${shajs('sha256').update(emailUser).digest('hex')}`
+     );
   }
 
   async initData() {
@@ -101,6 +111,8 @@ export class DataService {
       this.getListId(),
       this.getTaskList(),
       this.getFavoriteMealList(),
+      this.getSharedMealList(),
+      this.getFollowedSharedMealList(this.dataStore.followedEmails(), false) // Load My Shared + Followed
     ]);
   }
 
@@ -220,6 +232,23 @@ export class DataService {
     }
   }
 
+  async getSharedMealList() {
+    this.initRefs();
+    if (!this.sharedMealRef) return;
+    let tmpFavoriteMealList: any[] = [];
+
+    await getDocs(this.sharedMealRef!).then((data) => {
+      data.docs.forEach((data) => {
+        tmpFavoriteMealList.push({
+          ...(data.data() as any),
+          dbId: data.id,
+        });
+      });
+    });
+
+    this.sharedMealList.set(tmpFavoriteMealList);
+    this.dataStore.setSharedMealList(tmpFavoriteMealList);
+  }
   async getFavoriteMealList() {
     this.initRefs();
     if (!this.favoriteMealRef) return;
@@ -236,6 +265,62 @@ export class DataService {
 
     this.favoriteMealList.set(tmpFavoriteMealList);
     this.dataStore.setFavoriteMealList(tmpFavoriteMealList);
+  }
+
+  async getFollowedSharedMealList(emailUsers: string[], search?: boolean) {
+    const followedMealLists: {followedByEmail: string, mealList: any[]}[] = [];
+    
+    // Process all emails
+    const promises = emailUsers.map(async (emailUser) => {
+      const favoriteMealRefTmp: CollectionReference = collection(
+        this.DataBaseApp,
+        `sharedMealRef${shajs('sha256').update(emailUser).digest('hex')}`
+       );
+      
+      if (!favoriteMealRefTmp) return;
+      
+      const snapshot = await getDocs(favoriteMealRefTmp);
+      const mealList: any[] = [];
+      snapshot.forEach((doc) => {
+        mealList.push(doc.data() as any);
+      })
+      followedMealLists.push({
+            followedByEmail: emailUser,
+            mealList: mealList
+      });
+    });
+
+    await Promise.all(promises);
+
+    if(search) {
+      const currentList = this.dataStore.followedEmails();
+      // Add if not exists
+      if(emailUsers.length > 0 && !currentList.includes(emailUsers[0])) {
+          const newList = [...currentList, emailUsers[0]];
+          this.dataStore.setFollowedEmails(newList);
+          localStorage.setItem('followedEmails', JSON.stringify(newList));
+      }
+    }
+    
+    // Combine with MY shared meals (from sharedMealRef)
+    // We need to fetch mine again? Or just use the signal?
+    // Ideally, "Shared Recipes" view = My Shared + Followed.
+    // getSharedMealList sets sharedMealList with MY items. 
+    // We should APPEND or SET separate?
+    // User iterates sharedMealList().
+    
+    // Fetch MY shared list fresh to be safe
+    let myShared: any[] = [];
+    if(this.sharedMealRef) {
+         const mySnap = await getDocs(this.sharedMealRef);
+         mySnap.forEach(d => myShared.push({...d.data(), dbId: d.id, isMine: true}));
+    }
+
+    // Merge logic: Map by ID? Or just list?
+    const startList = [...followedMealLists];
+    this.dataStore.setFollowedSharedMealList(startList);
+
+    return followedMealLists;
   }
 
   async getTaskList() {
@@ -433,7 +518,103 @@ export class DataService {
     await this.getListId();
   }
 
-  async updateFavoriteMeal(mealOrName: string | Meal) {
+  async updateMySharedMeal(mealOrName: string | Meal, published: boolean) {
+    this.initRefs();
+    if (!this.sharedMealRef) return;
+    let mealToSave: any;
+    let mealNameStr = '';
+
+    if (typeof mealOrName === 'string') {
+        mealNameStr = mealOrName;
+        mealToSave = {
+            ...this.favoriteMealList().find((favMeal: any) => (favMeal.name === mealOrName || favMeal.strMeal === mealOrName)),
+            published: published
+        };
+    } else {
+        mealNameStr = mealOrName.strMeal || (mealOrName as any).name;
+        mealToSave = { ...mealOrName, published: published };
+    }
+    
+    // Check for existing shared meal to update instead of duplicate
+    // We check against 'sharedMealList' which contains "My Shared" + "Followed".
+    // We need to filter for MINE (isMine=true or from signal if we knew which).
+    // Better: Query Firestore by name? Or trust local if refreshed?
+    
+    // Let's use getDocs query to be safe or iterate local list if trusted.
+    // We'll iterate the sharedMealRef docs directly for safety or rely on 'getSharedMealList' data which sets 'isMine' maybe?
+    // Actually, let's query the collection by name to find the doc ID.
+    // Since 'where' query needs index, we'll fetch all (small lists usually) or simple match.
+    
+    const querySnapshot = await getDocs(this.sharedMealRef);
+    let existingDocId = '';
+    
+    querySnapshot.forEach((doc) => {
+        const data = doc.data() as any;
+        if (data.name === mealNameStr || data.strMeal === mealNameStr) {
+            existingDocId = doc.id;
+        }
+    });
+
+    if (existingDocId) {
+        // UPDATE existing
+        const docRef = doc(this.sharedMealRef, existingDocId);
+        await updateDoc(docRef, { ...mealToSave });
+    } else {
+        // ADD new
+        await addDoc(this.sharedMealRef!, mealToSave);
+    }
+
+    // Update Local Favorite (Private) to reflect status
+    if (typeof mealOrName !== 'string') {
+        if(!mealToSave.name) mealToSave.name = mealToSave.strMeal;
+    }
+
+    // Call updateFavoriteMeal to persist change in Private collection
+    await this.updateFavoriteMeal(mealToSave, published);
+
+    // Refresh Shared View
+    const followed = this.dataStore.followedEmails();
+    // Force refresh
+    await this.getFollowedSharedMealList(followed, false);
+  }
+
+  async deleteMySharedMeal(mealName: Meal) {
+    this.initRefs();
+    if (!this.sharedMealRef) return;
+    // We try to find by 'name' or 'strMeal'
+    let dbId = this.dataStore
+      .sharedMealList()
+      .find((favMeal: any) => (favMeal.name === mealName['name'] || favMeal.strMeal === mealName['strMeal']))?.dbId;
+      
+    if (!dbId) {
+      console.error('Invalid dbId for deleteFavoriteMeal:', mealName);
+      return;
+    }
+
+
+    const docRef = doc(
+      this.DataBaseApp,
+      `sharedMealRef${shajs('sha256').update(JSON.parse(localStorage.getItem('login')!).email).digest('hex')}`,
+      dbId
+    );
+    
+    try {
+        await deleteDoc(docRef);
+        mealName.published = false;
+        this.updateFavoriteMeal(mealName, false);
+        console.log('DeleteFavoriteMeal: Success', mealName);
+    } catch (err) {
+        console.error('DeleteFavoriteMeal: Failed', err);
+    }
+    
+    // Updates
+    const newList = this.favoriteMealList().filter(m => m.dbId !== dbId);
+    this.favoriteMealList.set(newList);
+    this.dataStore.setFavoriteMealList(newList);
+  }
+
+
+  async updateFavoriteMeal(mealOrName: string | Meal, published: boolean = false) {
     this.initRefs();
     if (!this.favoriteMealRef) return;
     let mealToSave: any;
@@ -443,15 +624,20 @@ export class DataService {
         mealToSave = {
             id: new Date().valueOf(),
             name: mealOrName,
-            isCustom: false
+            isCustom: false,
+            published: published
         };
     } else {
         // Full Custom Meal Object
         mealToSave = {
             ...mealOrName,
-            isCustom: true
+            isCustom: true,
+            published: published
             // Ensure id is present or generate one? Meal usually has idMeal.
         };
+    }
+    if(published){
+      this.deleteFavoriteMeal((mealOrName as Meal).strMeal);
     }
 
     await addDoc(this.favoriteMealRef!, mealToSave);
