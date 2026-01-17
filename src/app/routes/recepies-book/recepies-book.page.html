@@ -141,6 +141,12 @@
     </div>
     }
 
+    <div class="search-toggle-container">
+        <div class="toggle-btn" [class.active]="searchType() === 'recipe'" (click)="toggleSearchType('recipe')">Search Recipes</div>
+        <div class="toggle-btn" [class.active]="searchType() === 'user'" (click)="toggleSearchType('user')">Find User</div>
+    </div>
+
+    @if(searchType() === 'recipe') {
     <form class="recepies-search" [formGroup]="searchForm">
       <input
         type="text"
@@ -160,14 +166,16 @@
       </select>
       }
     </form>
+    }
 
+    @if(searchType() === 'user') {
     <form [formGroup]="searchToFollowForm" (ngSubmit)="searchToFollowFormSubmit()">
       <div class="search-to-follow">
-        <h2>Search to follow</h2>
-        <input type="text" placeholder="Search..." formControlName="search"/>
+        <input type="text" placeholder="Enter user gmail..." formControlName="search"/>
         <button type="submit">Search</button>
       </div>
     </form>
+    }
 
 
     <div class="favorite-list-wrapper">
@@ -214,7 +222,12 @@
     @if(followedSharedMealList().length > 0){
     <div class="favorite-list-wrapper">
       @for (meal of followedSharedMealList(); track $index) {
-      <h2 class="favorite">{{ meal.followedByEmail }}</h2>
+      <div class="user-header">
+           <h2 class="favorite">{{ meal.followedByEmail }}</h2>
+           <div class="unfollow-btn" (click)="unfollowUser(meal.followedByEmail)">
+              <ion-icon name="trash-outline"></ion-icon>
+           </div>
+      </div>
       <div class="favorite-list">
         @for (mealItem of meal.mealList; track $index) {
         <div class="recipie-item-small">
@@ -232,7 +245,7 @@
         }
       </div>
     }
-      </div>
+    </div>
     }
 
     @if(tenMealsInStok){
@@ -265,7 +278,7 @@
               </div>
               <div class="results-list">
                   @for(meal of foundMeals(); track $index) {
-                      <div class="recipie-item-small" (click)="selectMeal(meal, true); closeSearchPopup()">
+                      <div class="recipie-item-small">
                           <img [src]="meal.strMealThumb" class="back-img">
                           <div class="title">{{ meal.strMeal }}</div>
                       </div>
@@ -273,6 +286,12 @@
                        <p class="empty-msg">No recipes found.</p>
                   }
               </div>
+              @if(foundMeals().length > 0) {
+                 <div class="form-actions">
+                     <button class="cancel-btn" (click)="closeSearchPopup()">Cancel</button>
+                     <button class="save-btn" (click)="confirmFollow()">Follow User</button>
+                 </div>
+              }
           </div>
       </div>
     }

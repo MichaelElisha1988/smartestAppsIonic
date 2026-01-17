@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { closeOutline } from 'ionicons/icons';
+import { closeOutline, trashOutline } from 'ionicons/icons';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs';
 import { RecipiesDataService } from './recipies-data.service';
@@ -56,6 +56,7 @@ export class RecepiesBookPage implements OnInit {
   showSearchPopup = signal<boolean>(false);
   followedSharedMealList = signal<{followedByEmail: string, mealList: Meal[]}[]>([]);
   tenMealsInStok: Meal[] = [];
+  searchType = signal<'recipe' | 'user'>('recipe'); // 'recipe' | 'user'
 
   searchToFollowForm = new FormGroup({
     search: new FormControl<string>('', { validators: [Validators.required, Validators.email], updateOn: 'change' })
@@ -116,17 +117,18 @@ export class RecepiesBookPage implements OnInit {
     console.log('Search Value:', search);
     
     if(this.searchToFollowForm.valid && search){
-      console.log('Calling searchSharedList...');
-      this.recipiesSrv.searchSharedList(search).then((res: any[]) => {
-          console.log('Search result:', res);
-          // res is array of arrays (one per email searched)
-          if(res && res.length > 0 && res[0].length > 0) {
-              this.foundMeals.set(res[0]);
+      console.log('Calling previewSharedList...');
+      // Use PREVIEW method
+      this.recipiesSrv.previewSharedList(search).then((res: any[]) => {
+          console.log('Preview result:', res);
+          // res is array of meals
+          if(res && res.length > 0) {
+              this.foundMeals.set(res);
               this.showSearchPopup.set(true);
           } else {
               this.foundMeals.set([]);
               console.log('No meals found for this user');
-              // Maybe show toast? For now just log.
+              alert('No recipes found for this user.');
           }
       });
     } else {
@@ -134,9 +136,29 @@ export class RecepiesBookPage implements OnInit {
     }
   }
 
+  confirmFollow() {
+      const email = this.searchToFollowForm.value.search;
+      if(email) {
+          this.recipiesSrv.searchSharedList(email).then(() => {
+              this.closeSearchPopup();
+              // Trigger refresh is handled by service logic updates
+          });
+      }
+  }
+
   closeSearchPopup() {
       this.showSearchPopup.set(false);
       this.foundMeals.set([]);
+  }
+
+  toggleSearchType(type: 'recipe' | 'user') {
+      this.searchType.set(type);
+  }
+
+  unfollowUser(email: string) {
+      if(confirm('Are you sure you want to stop following ' + email + '?')) {
+          this.recipiesSrv.dataService.unfollowUser(email);
+      }
   }
   
   // Reset step on toggle
@@ -193,7 +215,7 @@ export class RecepiesBookPage implements OnInit {
   }
 
   constructor() {
-    addIcons({ closeOutline });
+    addIcons({ closeOutline, trashOutline });
     effect(() => {
       if (
         this.searchFormValueEffect() &&

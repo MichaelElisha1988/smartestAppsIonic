@@ -301,6 +301,8 @@ export class DataService {
           localStorage.setItem('followedEmails', JSON.stringify(newList));
       }
     }
+
+    // Combine with MY shared meals (from sharedMealRef)
     
     // Combine with MY shared meals (from sharedMealRef)
     // We need to fetch mine again? Or just use the signal?
@@ -321,6 +323,35 @@ export class DataService {
     this.dataStore.setFollowedSharedMealList(startList);
 
     return followedMealLists;
+  }
+
+  async previewSharedMeals(emailUser: string) {
+    // Similar to getFollowedSharedMealList but does NOT persist or update Store.
+    // Just returns the found meals for this email.
+    
+    // Check hash first
+    const hash = shajs('sha256').update(emailUser).digest('hex');
+    const sharedRef = collection(this.DataBaseApp, `sharedMealRef${hash}`);
+    
+    if (!sharedRef) return [];
+    
+    const snapshot = await getDocs(sharedRef);
+    const mealList: any[] = [];
+    snapshot.forEach((doc) => {
+        mealList.push(doc.data());
+    });
+    
+    return mealList;
+  }
+
+  async unfollowUser(email: string) {
+      const currentList = this.dataStore.followedEmails();
+      const newList = currentList.filter(e => e !== email);
+      this.dataStore.setFollowedEmails(newList);
+      localStorage.setItem('followedEmails', JSON.stringify(newList));
+      
+      // Refresh the view
+      await this.getFollowedSharedMealList(newList, false);
   }
 
   async getTaskList() {

@@ -63,4 +63,8 @@ export class RecipiesDataService {
   searchSharedList(mealName: string) {  
     return this.dataService.getFollowedSharedMealList([mealName], true);
   }
+
+  previewSharedList(mealName: string) {
+      return this.dataService.previewSharedMeals(mealName);
+  }
 }
