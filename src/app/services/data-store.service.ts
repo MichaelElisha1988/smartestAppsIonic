@@ -45,8 +45,8 @@ const initialState: smartestAppsState = {
   favoriteMealList: [], // Initialize with an empty array
   sharedMealList: [], // Initialize with an empty array
   selectedMeal: null, // Initialize with null
-  followedEmails: sessionStorage.getItem('followedEmails')
-    ? JSON.parse(sessionStorage.getItem('followedEmails')!)
+  followedEmails: localStorage.getItem('followedEmails')
+    ? JSON.parse(localStorage.getItem('followedEmails')!)
     : [],
   followedSharedMealList: [],
 };

@@ -322,7 +322,7 @@ export class RecepiesBookPage implements OnInit {
   }
 
   deleteFromFavorite() {
-    if (this.selectedMeal()) {
+    if (this.selectedMeal() && !this.selectedMeal()!.published) {
       const mealToDelete = this.selectedMeal()!;
       
       this.favoriteMealList.update((list) =>
@@ -332,6 +332,9 @@ export class RecepiesBookPage implements OnInit {
 
       // Unify delete: By name (works for both API and Custom if strMeal/name aligns)
       this.dataHttp.deleteFavoriteMeal(mealToDelete.strMeal);
+    }
+    else {
+      alert('You cannot delete a shared recipe - Please delete it from the shared recipes list first');
     }
   }
 
@@ -402,10 +405,11 @@ export class RecepiesBookPage implements OnInit {
     this.tenMealsInStok = mealList;
   }
 
-  selectMeal(meal: Meal, isShared: boolean = false, selectedMealFollowedByEmail: string = this.loginEmail()) {
+  selectMeal(meal: Meal, notFav: boolean = false, isShared: boolean = false, selectedMealFollowedByEmail: string = this.loginEmail()) {
     this.selectedMeal.set(meal);
     this.isShared.set(isShared);
     this.selectedMealFollowedByEmail.set(selectedMealFollowedByEmail);
+    this.notFav = notFav;
   }
   ViewuserDetail(selectedMeal: Meal) {
     this.dataStore.setSelectedMeal(selectedMeal);

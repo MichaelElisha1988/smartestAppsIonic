@@ -573,8 +573,11 @@ export class DataService {
     await this.updateFavoriteMeal(mealToSave, published);
 
     // Refresh Shared View
+    // FORCE Update of "My Shared List"
+    await this.getSharedMealList();
+
     const followed = this.dataStore.followedEmails();
-    // Force refresh
+    // Force refresh Followed List
     await this.getFollowedSharedMealList(followed, false);
   }
 
@@ -611,6 +614,9 @@ export class DataService {
     const newList = this.favoriteMealList().filter(m => m.dbId !== dbId);
     this.favoriteMealList.set(newList);
     this.dataStore.setFavoriteMealList(newList);
+    
+    // Refresh Shared
+    await this.getSharedMealList();
   }
 
 
@@ -636,19 +642,25 @@ export class DataService {
             // Ensure id is present or generate one? Meal usually has idMeal.
         };
     }
-    if(published){
-      this.deleteFavoriteMeal((mealOrName as Meal).strMeal);
+    // Check existing
+    // We try to find by 'name' or 'strMeal' to update same recipe
+    const mealName = (typeof mealOrName === 'string') ? mealOrName : (mealOrName.strMeal || (mealOrName as any).name);
+    
+    let dbId = this.dataStore
+      .favoriteMealList()
+      .find((favMeal: any) => (favMeal.name === mealName || favMeal.strMeal === mealName))?.dbId;
+      
+    if (dbId) {
+         // Update
+         const docRef = doc(this.DataBaseApp, `favoriteMealRef${JSON.parse(localStorage.getItem('login')!).uid}`, dbId);
+         await updateDoc(docRef, { ...mealToSave });
+    } else {
+         // Add
+         await addDoc(this.favoriteMealRef!, mealToSave);
     }
-
-    await addDoc(this.favoriteMealRef!, mealToSave);
     
     // Update Local State Optimistically
-    const currentList = this.favoriteMealList();
-    if (typeof mealOrName !== 'string') {
-        mealToSave.name = mealOrName.strMeal; 
-    }
-
-    this.dataStore.setFavoriteMealList([...currentList, mealToSave]);
+    // Reload full list to be sure
     await this.getFavoriteMealList();
   }
 

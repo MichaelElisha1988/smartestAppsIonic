@@ -177,7 +177,7 @@
         <div class="recipie-item-small">
           <img
             class="back-img"
-            (click)="selectMeal(meal)"
+            (click)="selectMeal(meal, false)"
             src="{{ meal.strMealThumb }}"
             alt="steak"
           />
@@ -197,7 +197,7 @@
         <div class="recipie-item-small">
           <img
             class="back-img"
-            (click)="selectMeal(meal, true)"
+            (click)="selectMeal(meal, true, true)"
             src="{{ meal.strMealThumb }}"
             alt="steak"
           />
@@ -220,7 +220,7 @@
         <div class="recipie-item-small">
           <img
             class="back-img"
-            (click)="selectMeal(mealItem, true, meal.followedByEmail)"
+            (click)="selectMeal(mealItem, true, true, meal.followedByEmail)"
             src="{{ mealItem.strMealThumb }}"
             alt="steak"
           />
@@ -243,7 +243,7 @@
         <div class="recipie-item-small">
           <img
             class="back-img"
-            (click)="selectMeal(meal)"
+            (click)="selectMeal(meal, true)"
             src="{{ meal.strMealThumb }}"
             [alt]="meal.strMeal"
           />
